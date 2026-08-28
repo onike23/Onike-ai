@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Onike AI</title>
+<style>
+body{margin:0; background:#000; color:#fff; font-family:Arial; padding:12px;}
+h2{color:#e50914; text-align:center;}
+.box{background:#111; padding:12px; border-radius:10px; margin-bottom:10px; border:1px solid #222;}
+input,textarea{width:100%; background:#222; border:none; padding:12px; border-radius:8px; color:#fff; margin-top:6px; box-sizing:border-box;}
+button{background:#e50914; color:#fff; border:none; padding:14px; border-radius:8px; font-weight:700; width:100%; margin-top:8px; font-size:14px;}
+.grid{display:grid; grid-template-columns:1fr 1fr 1fr; gap:6px; margin-top:8px;}
+.grid div{background:#222; padding:10px; border-radius:8px; text-align:center; font-size:11px;}
+iframe{width:100%; height:350px; background:#fff; border:none; border-radius:10px; margin-top:10px;}
+</style>
+</head>
+<body>
+<h2>🤖 Onike AI</h2>
+<p style="text-align:center; font-size:12px; color:#888;">It's free to use - Build Game + Website + Publish</p>
+
+<div class="box">
+<input id="repo" value="onike23/onike23.github.io">
+<input id="token" placeholder="Paste GitHub token ghp_...">
+<textarea id="prompt" rows="3" placeholder="What to create? e.g. Snake game for T528"></textarea>
+<input id="fname" placeholder="File name e.g. snake.html" value="my-game.html">
+<div class="grid">
+<div onclick="setGame('snake')">🐍<br>Snake</div>
+<div onclick="setGame('flappy')">🐦<br>Flappy</div>
+<div onclick="setGame('car')">🏎️<br>Car</div>
+<div onclick="setGame('football')">⚽<br>Football</div>
+<div onclick="setGame('shop')">🛒<br>Shop</div>
+<div onclick="setGame('tv')">📺<br>TV site</div>
+</div>
+<button onclick="generate()">✨ Generate</button>
+</div>
+
+<div class="box">
+<iframe id="prev"></iframe>
+<button onclick="publish()" style="background:#00c853;">🚀 Publish to GitHub</button>
+<button onclick="download()" style="background:#2196F3;">📥 Download to Phone</button>
+<div id="status" style="text-align:center; font-size:11px; color:#0f0; margin-top:8px;"></div>
+</div>
+
+<script>
+let html="";
+const games={
+snake:`<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width"><style>body{margin:0;background:#000;color:#fff;text-align:center;font-family:Arial}canvas{background:#111;border:2px solid red;display:block;margin:10px auto}button{padding:12px;margin:3px;border-radius:20px;border:none;background:#222;color:#fff;min-width:50px}</style></head><body><h3>Snake - Onike</h3><canvas id=c width=240 height=320></canvas><div><button onclick=dir(0,-1)>↑ 2</button></div><div><button onclick=dir(-1,0)>←4</button><button onclick=dir(0,1)>↓5</button><button onclick=dir(1,0)>6→</button></div><script>let C=document.getElementById('c'),X=C.getContext('2d'),S=[{x:12,y:16}],F={x:15,y:10},dx=1,dy=0,sc=0;function D(){X.fillStyle='#111';X.fillRect(0,0,240,320);X.fillStyle='red';S.forEach(o=>X.fillRect(o.x*10,o.y*10,9,9));X.fillStyle='lime';X.fillRect(F.x*10,F.y*10,9,9);}function M(){let H={x:S[0].x+dx,y:S[0].y+dy};if(H.x<0)H.x=23;if(H.x>23)H.x=0;if(H.y<0)H.y=31;if(H.y>31)H.y=0;if(S.some(o=>o.x==H.x&&o.y==H.y)){alert('Game Over:'+sc);S=[{x:12,y:16}];dx=1;dy=0;sc=0;}S.unshift(H);if(H.x==F.x&&H.y==F.y){sc++;F={x:Math.floor(Math.random()*24),y:Math.floor(Math.random()*32)};}else S.pop();D();}function dir(a,b){if(dx==-a&&dy==-b)return;dx=a;dy=b;}setInterval(M,150);D();<\/script></body></html>`,
+flappy:`<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width"><style>body{margin:0;background:#70c5ce;text-align:center}canvas{background:#70c5ce;display:block;margin:auto}</style></head><body><canvas id=c width=240 height=400></canvas><button onclick=flap() style="width:90%;padding:15px;background:red;color:#fff;border:none;border-radius:20px;margin-top:10px;">TAP TO FLAP</button><script>let C=document.getElementById('c'),X=C.getContext('2d'),B={y:200,vy:0},P=[],sc=0;function D(){X.fillStyle='#70c5ce';X.fillRect(0,0,240,400);X.fillStyle='green';P.forEach(p=>{X.fillRect(p.x,0,30,p.g);X.fillRect(p.x,p.g+80,30,400);});X.fillStyle='yellow';X.fillRect(50,B.y,20,20);}function U(){B.vy+=0.5;B.y+=B.vy;if(B.y>380||B.y<0){B.y=200;B.vy=0;P=[];}P.forEach(p=>{p.x-=2;if(p.x<-30){p.x=240;p.g=Math.random()*200+20}if(50+20>p.x&&50<p.x+30&&(B.y<p.g||B.y+20>p.g+80)){B.y=200;B.vy=0;P=[];}});if(P.length==0||P[P.length-1].x<150)P.push({x:240,g:Math.random()*200+20});D();requestAnimationFrame(U);}function flap(){B.vy=-8;}C.onclick=flap;U();<\/script></body></html>`
+}
+function setGame(t){document.getElementById('prompt').value=t+' game';document.getElementById('fname').value=t+'.html';generate();}
+function generate(){let p=document.getElementById('prompt').value.toLowerCase();let type='snake';if(p.includes('flappy'))type='flappy';else if(p.includes('car'))type='snake';else type='snake';html=games[type]||games['snake'];document.getElementById('prev').srcdoc=html;document.getElementById('status').innerHTML='✅ Generated! Now Download or Publish';localStorage.setItem('t',document.getElementById('token').value);}
+function download(){if(!html){alert('Generate first');return;}let b=new Blob([html],{type:'text/html'});let u=URL.createObjectURL(b);let a=document.createElement('a');a.href=u;a.download=document.getElementById('fname').value||'game.html';a.click();document.getElementById('status').innerHTML='✅ Downloaded to Downloads!';}
+async function publish(){let token=document.getElementById('token').value.trim();let repo=document.getElementById('repo').value.trim();let fname=document.getElementById('fname').value.trim();if(!token||!html){alert('Add token and generate');return;}document.getElementById('status').innerHTML='Publishing...';try{let sha=null;let chk=await fetch('https://api.github.com/repos/'+repo+'/contents/'+fname,{headers:{'Authorization':'Bearer '+token}});if(chk.ok){let d=await chk.json();sha=d.sha;}let res=await fetch('https://api.github.com/repos/'+repo+'/contents/'+fname,{method:'PUT',headers:{'Authorization':'Bearer '+token,'Content-Type':'application/json'},body:JSON.stringify({message:'Onike AI:'+fname,content:btoa(unescape(encodeURIComponent(html))),sha:sha||undefined})});if(res.ok){let url='https://'+repo.split('/')[0]+'.github.io/'+fname;document.getElementById('status').innerHTML='✅ LIVE: <a href='+url+' style=color:#0f0>'+url+'</a>';window.open(url,'_blank');}else{let j=await res.json();document.getElementById('status').innerHTML='Error: '+j.message;}}catch(e){document.getElementById('status').innerHTML=e.message;}}
+document.getElementById('token').value=localStorage.getItem('t')||'';
+</script>
+</body>
+  </html>
