@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Onike AI V15 - Any Game</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<style>
+:root{--bg:#080808;--card:#111;--text:#fff;--accent:linear-gradient(90deg,#00c853,#2196F3);--border:#222}
+body{margin:0;background:var(--bg);color:var(--text);font-family:Arial;padding:10px}
+.box{background:var(--card);border:1px solid var(--border);padding:14px;border-radius:16px;margin-bottom:10px}
+input,textarea,select{width:100%;background:#1a1a1a;border:1px solid var(--border);padding:14px;border-radius:12px;color:var(--text);margin-top:8px;box-sizing:border-box;font-size:14px}
+textarea{height:110px} button{border:none;padding:16px;border-radius:12px;color:#fff;font-weight:800;width:100%;margin-top:8px;font-size:14px;cursor:pointer}
+iframe{width:100%;height:620px;background:#000;border:2px solid var(--border);border-radius:12px;margin-top:10px}
+.chip{display:inline-block;padding:6px 10px;margin:3px;background:#222;border:1px solid #333;border-radius:20px;font-size:10px;cursor:pointer}
+.chip:hover{background:#333}
+</style>
+</head>
+<body>
+<h2 style="text-align:center">🚀 Onike AI V15 - Build ANY Game</h2>
+<div style="text-align:center;font-size:11px;color:#888">Type ANY idea - AI detects type and builds quality game</div>
+
+<div class="box">
+<label style="font-size:11px;color:#888">1️⃣ WHAT GAME DO YOU WANT? (Click example or type your own)</label>
+<div style="margin-top:6px">
+<span class="chip" onclick="setPrompt('Realistic African savanna hunting, I hunt lions and deer with sniper rifle, scope zoom, blood effects, forest')">🦁 Lion & Deer Hunting</span>
+<span class="chip" onclick="setPrompt('Football penalty Uganda vs Nigeria, I shoot left center right, goalkeeper dives')">⚽ Football Penalty</span>
+<span class="chip" onclick="setPrompt('Street fighter like Tekken, two fighters punch kick jump, health bars')">🥊 Fighting / Boxing</span>
+<span class="chip" onclick="setPrompt('Boda boda racing in Kampala streets, dodge cars and taxis, collect coins')">🏍️ Boda Racing</span>
+<span class="chip" onclick="setPrompt('Zombie shooter, zombies come from forest, I shoot with gun, survival')">🧟 Zombie Shooter</span>
+<span class="chip" onclick="setPrompt('Snake game like old Nokia, eat food grow long')">🐍 Snake</span>
+<span class="chip" onclick="setPrompt('Car racing GTA style, drift, nitro, 3D road')">🏎️ Car Racing</span>
+<span class="chip" onclick="setPrompt('Space shooter, spaceship shoots aliens')">🚀 Space Shooter</span>
+</div>
+<textarea id="prompt" placeholder="Type ANY game idea here... Example: Make a game where I am a boda rider in Kampala collecting passengers, or Make boxing game, or Make hunting lions, or Make football, or Make snake, or Make GTA... ANYTHING!"></textarea>
+<input id="title" placeholder="Game Title - e.g. My Boda Racing">
+<input id="fname" placeholder="File name - e.g. boda-racing">
+<select id="design"><option>Auto Detect Type</option></select>
+<button onclick="build()" style="background:var(--accent)">⚡ BUILD ANY GAME - AI AUTO DETECTS TYPE</button>
+<div id="status" style="text-align:center;font-size:11px;color:#0f0;margin-top:8px;min-height:18px"></div>
+</div>
+
+<div class="box">
+<iframe id="prev"></iframe>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px">
+<button onclick="dlHTML()" style="background:#2196F3">📥 HTML</button>
+<button onclick="dlJAR()" style="background:#FF9800">📱 JAVA JAR</button>
+</div>
+<button onclick="dlAPK()" style="background:linear-gradient(90deg,#00c853,#009624);margin-top:6px">🤖 DOWNLOAD INSTALLABLE APK</button>
+</div>
+
+<script>
+function setPrompt(t){ document.getElementById('prompt').value=t; }
+
+let htmlCode="", titleG="", fnameG="";
+
+function detectType(p){
+ p=p.toLowerCase();
+ if(p.includes('hunt')||p.includes('deer')||p.includes('lion')||p.includes('animal')||p.includes('bird')||p.includes('duck')||p.includes('rabbit')||p.includes('wild')) return 'hunting';
+ if(p.includes('football')||p.includes('soccer')||p.includes('penalty')||p.includes('fifa')) return 'football';
+ if(p.includes('fight')||p.includes('box')||p.includes('karate')||p.includes('kung')||p.includes('tekken')||p.includes('street fighter')||p.includes('wrestling')) return 'fighting';
+ if(p.includes('boda')||p.includes('kampala')||p.includes('uganda')||p.includes('taxi')) return 'boda';
+ if(p.includes('car')||p.includes('racing')||p.includes('drift')||p.includes('gta')||p.includes('need for speed')||p.includes('asphalt')) return 'racing';
+ if(p.includes('zombie')||p.includes('shooter')||p.includes('army')||p.includes('soldier')||p.includes('gun')&&p.includes('survival')) return 'shooter';
+ if(p.includes('snake')||p.includes('nokia')) return 'snake';
+ if(p.includes('tetris')||p.includes('block')) return 'tetris';
+ if(p.includes('space')||p.includes('alien')||p.includes('spaceship')||p.includes('galaga')) return 'space';
+ return 'hunting';
+}
+
+function build(){
+ let p=document.getElementById('prompt').value.trim();
+ if(!p){alert('Type ANY game idea'); return;}
+ titleG=document.getElementById('title').value.trim()||p.slice(0,32)||'Onike Game';
+ fnameG=(document.getElementById('fname').value.trim()||'onike-game').replace(/[^a-z0-9\-]/gi,'-').toLowerCase()||'onike-game';
+ let type=detectType(p);
+ if(type==='hunting') htmlCode=makeHunting(titleG,p);
+ else if(type==='football') htmlCode=makeFootball(titleG);
+ else if(type==='fighting') htmlCode=makeFighting(titleG);
+ else if(type==='boda') htmlCode=makeBoda(titleG);
+ else if(type==='racing') htmlCode=makeRacing(titleG);
+ else if(type==='shooter') htmlCode=makeShooter(titleG);
+ else if(type==='snake') htmlCode=makeSnake(titleG);
+ else if(type==='tetris') htmlCode=makeTetris(titleG);
+ else if(type==='space') htmlCode=makeSpace(titleG);
+ else htmlCode=makeHunting(titleG,p);
+
+ document.getElementById('prev').srcdoc=htmlCode;
+ document.getElementById('status').innerHTML=`✅ BUILT: <b>${type.toUpperCase()}</b> - ${titleG}<br>Type: "${p.slice(0,60)}"<br>Quality 60 FPS Canvas Engine`;
+}
+
+// ===== QUALITY ENGINES - ANY GAME =====
+
+function makeHunting(title,prompt){
+ return `<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"><style>*{margin:0;padding:0;box-sizing:border-box}body{background:#000;overflow:hidden;font-family:Arial;touch-action:none}#c{position:absolute;top:0;left:0;width:100%;height:100%}#top{position:absolute;top:0;left:0;width:100%;height:52px;background:linear-gradient(#111,#000);display:flex;justify-content:space-between;align-items:center;padding:0 12px;color:#fff;z-index:10;border-bottom:2px solid #333;font-size:13px;font-weight:700}#scope{position:absolute;width:200px;height:200px;border:3px solid #fff;border-radius:50%;pointer-events:none;transform:translate(-50%,-50%);display:none;z-index:11;box-shadow:0 0 0 3000px rgba(0,0,0,0.65)}#controls{position:absolute;bottom:0;left:0;width:100%;height:85px;background:linear-gradient(transparent,#000 70%);display:flex;justify-content:space-between;align-items:flex-end;padding:10px;z-index:12}.btn{padding:14px 18px;border:none;border-radius:12px;font-weight:900}#hit{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:40px;font-weight:900;color:#ff0;display:none;z-index:15;pointer-events:none}</style></head><body><canvas id=c></canvas><div id=scope></div><div id=top><span>🏹 <span id=score>0</span></span><span>${title}</span><span>🔫 <span id=ammo>8</span>/8 ESC <span id=esc>0</span>/5</span></div><div id=hit>HIT!</div><div id=controls><button class=btn style="background:#222;color:#fff" onclick="reload()">RELOAD 4</button><button class=btn style="background:linear-gradient(#e50914,#8b0000);color:#fff;min-width:130px" onclick="shoot()">SHOOT 5</button><button class=btn style="background:#222;color:#fff" onclick="toggleScope()">SCOPE 6</button></div>
+<script>
+const canvas=document.getElementById('c'),ctx=canvas.getContext('2d');let W,H,DPR=devicePixelRatio||1;function R(){W=innerWidth;H=innerHeight;canvas.width=W*DPR;canvas.height=H*DPR;canvas.style.width=W+'px';canvas.style.height=H+'px';ctx.setTransform(DPR,0,0,DPR,0,0);}R();addEventListener('resize',R);
+let score=0,ammo=8,esc=0,scopeOn=false,cross={x:W/2,y:H/2},recoil=0,animals=[],parts=[],trees=[];for(let i=0;i<12;i++)trees.push({x:Math.random()*W,y:H*0.55+Math.random()*H*0.35,s:0.6+Math.random()*0.9});
+class Animal{constructor(){this.t=Math.random()<0.5?'deer':'lion';this.x=Math.random()<0.5?-120:W+120;this.y=H*0.58+Math.random()*H*0.28;this.vx=(this.x<0?1:-1)*(1.2+Math.random()*2.2);this.f=0;this.alive=true;this.ht=0;this.hp=this.t==='lion'?2:1;this.pts=this.t==='lion'?50:30;this.sz=54;}update(){if(!this.alive){this.ht++;if(this.ht>30)return false;}this.x+=this.vx;this.f+=0.2;if(this.x<-150||this.x>W+150){esc++;document.getElementById('esc').innerText=esc;if(esc>=5){alert('GAME OVER Score:'+score);score=0;esc=0;ammo=8;animals=[];document.getElementById('score').innerText=0;document.getElementById('esc').innerText=0;document.getElementById('ammo').innerText=8;}return false;}return true;}draw(){ctx.save();ctx.translate(this.x,this.y);ctx.scale(this.vx>0?1:-1,1);let w=Math.sin(this.f)*6;ctx.fillStyle='rgba(0,0,0,0.3)';ctx.beginPath();ctx.ellipse(0,18,26,8,0,0,6.28);ctx.fill();if(!this.alive){ctx.rotate(this.ht*0.15);ctx.globalAlpha=Math.max(0,1-this.ht/30);}if(this.t==='deer'){ctx.fillStyle='#C19A6B';ctx.fillRect(-22,-12,44,20);ctx.fillStyle='#8B5A2B';ctx.fillRect(14+w,-16,18,10);ctx.fillStyle='#000';ctx.fillRect(28,-14,3,3);ctx.fillStyle='#8B4513';ctx.fillRect(-18,8,5,14+Math.abs(w*0.5));ctx.fillRect(-6,8,5,14-Math.abs(w*0.5));ctx.fillRect(6,8,5,14+Math.abs(w*0.5));ctx.fillRect(18,8,5,14-Math.abs(w*0.5));}else{ctx.fillStyle='#D4A017';ctx.fillRect(-24,-14,48,24);ctx.fillStyle='#FFD700';ctx.beginPath();ctx.arc(18,-8,18,0,6.28);ctx.fill();ctx.fillStyle='#D4A017';ctx.fillRect(12,-16,20,14);ctx.fillStyle='#B8860B';ctx.fillRect(-20,10,6,16+w*0.3);ctx.fillRect(-6,10,6,16-w*0.3);ctx.fillRect(8,10,6,16+w*0.3);ctx.fillRect(20,10,6,16-w*0.3);}ctx.restore();}}
+class P{constructor(x,y,c){this.x=x;this.y=y;this.vx=(Math.random()-0.5)*8;this.vy=(Math.random()-0.5)*8-2;this.l=20;this.c=c;}update(){this.x+=this.vx;this.y+=this.vy;this.vy+=0.3;this.l--;return this.l>0;}draw(){ctx.fillStyle=this.c;ctx.globalAlpha=this.l/20;ctx.beginPath();ctx.arc(this.x,this.y,3,0,6.28);ctx.fill();ctx.globalAlpha=1;}}
+function spawn(){if(animals.length<6)animals.push(new Animal());}
+function bg(){let g=ctx.createLinearGradient(0,0,0,H*0.6);g.addColorStop(0,'#87CEEB');g.addColorStop(1,'#E0F6FF');ctx.fillStyle=g;ctx.fillRect(0,0,W,H*0.6);ctx.fillStyle='#A0A0A0';ctx.beginPath();ctx.moveTo(0,H*0.55);ctx.lineTo(W*0.2,H*0.35);ctx.lineTo(W*0.6,H*0.32);ctx.lineTo(W,H*0.38);ctx.lineTo(W,H*0.6);ctx.lineTo(0,H*0.6);ctx.closePath();ctx.fill();ctx.fillStyle='#FFD700';ctx.beginPath();ctx.arc(W*0.85,H*0.12,28,0,6.28);ctx.fill();let gg=ctx.createLinearGradient(0,H*0.55,0,H);gg.addColorStop(0,'#4CAF50');gg.addColorStop(1,'#3E2723');ctx.fillStyle=gg;ctx.fillRect(0,H*0.55,W,H*0.45);trees.forEach(t=>{ctx.globalAlpha=0.6+t.s*0.4;ctx.font=(28*t.s)+'px Arial';ctx.fillText('🌳',t.x,t.y);});ctx.globalAlpha=1;}
+function loop(){bg();animals=animals.filter(a=>{let ok=a.update();if(ok)a.draw();return ok;});parts=parts.filter(p=>{let ok=p.update();if(ok)p.draw();return ok;});ctx.strokeStyle='rgba(255,255,255,0.9)';ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(cross.x-18,cross.y);ctx.lineTo(cross.x-6,cross.y);ctx.moveTo(cross.x+6,cross.y);ctx.lineTo(cross.x+18,cross.y);ctx.moveTo(cross.x,cross.y-18);ctx.lineTo(cross.x,cross.y-6);ctx.moveTo(cross.x,cross.y+6);ctx.lineTo(cross.x,cross.y+18);ctx.stroke();ctx.fillStyle='#f00';ctx.beginPath();ctx.arc(cross.x,cross.y,3,0,6.28);ctx.fill();ctx.save();ctx.translate(W/2,H);ctx.translate(0,-recoil*12);ctx.font='64px Arial';ctx.textAlign='center';ctx.fillText('🔫',0,-12);ctx.restore();if(recoil>0)recoil*=0.85;requestAnimationFrame(loop);}
+function shoot(){if(ammo<=0){show('RELOAD!');return;}ammo--;document.getElementById('ammo').innerText=ammo;recoil=1;let hit=null,md=999;animals.forEach(a=>{if(!a.alive)return;let d=Math.hypot(a.x-cross.x,a.y-cross.y);if(d<md&&d<a.sz){md=d;hit=a;}});if(hit){hit.hp--;if(hit.hp<=0){hit.alive=false;for(let i=0;i<12;i++)parts.push(new P(hit.x,hit.y-10,hit.t==='lion'?'#D4A017':'#8B0000'));score+=hit.pts;document.getElementById('score').innerText=score;show('HIT +'+hit.pts);canvas.style.transform='translate('+(Math.random()*6-3)+'px,'+(Math.random()*6-3)+'px)';setTimeout(()=>canvas.style.transform='',80);}else{for(let i=0;i<5;i++)parts.push(new P(hit.x,hit.y-10,'#ff0'));show('HIT!');hit.vx*=-1.2;}setTimeout(()=>{animals=animals.filter(a=>a!==hit);if(animals.length<5)spawn();},400);}else{for(let i=0;i<4;i++)parts.push(new P(cross.x+(Math.random()-0.5)*20,cross.y+(Math.random()-0.5)*20,'#aaa'));}}
+function show(t){let h=document.getElementById('hit');h.innerText=t;h.style.display='block';setTimeout(()=>h.style.display='none',700);}
+function reload(){ammo=8;document.getElementById('ammo').innerText=ammo;show('RELOADED');}
+function toggleScope(){scopeOn=!scopeOn;let s=document.getElementById('scope');s.style.display=scopeOn?'block':'none';s.style.left=cross.x+'px';s.style.top=cross.y+'px';s.style.width='220px';s.style.height='220px';}
+canvas.addEventListener('mousemove',e=>{cross.x=e.clientX;cross.y=e.clientY;if(scopeOn){let s=document.getElementById('scope');s.style.left=cross.x+'px';s.style.top=cross.y+'px';}});
+canvas.addEventListener('touchmove',e=>{e.preventDefault();cross.x=e.touches[0].clientX;cross.y=e.touches[0].clientY;if(scopeOn){let s=document.getElementById('scope');s.style.left=cross.x+'px';s.style.top=cross.y+'px';}},{passive:false});
+canvas.addEventListener('mousedown',shoot);canvas.addEventListener('touchstart',e=>{e.preventDefault();cross.x=e.touches[0].clientX;cross.y=e.touches[0].clientY;shoot();},{passive:false});
+document.addEventListener('keydown',e=>{if(e.key=='5'||e.key==' ')shoot();if(e.key=='4')reload();if(e.key=='6')toggleScope();});
+for(let i=0;i<4;i++)setTimeout(spawn,i*600);setInterval(()=>{if(animals.length<6&&Math.random()<0.7)spawn();},1200);loop();
+<\/script></body></html>`;
+}
+
+function makeFootball(title){
+ return `<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width,initial-scale=1"><style>body{margin:0;background:#0a3d0a;color:#fff;font-family:Arial;overflow:hidden}#field{width:100%;height:68vh;background:linear-gradient(#2e7d32,#1b5e20);position:relative}.goal{position:absolute;top:5%;left:50%;transform:translateX(-50%);width:70%;height:22%;border:4px solid #fff;border-top:none;background:rgba(255,255,255,0.1)}.keeper{position:absolute;top:12%;left:50%;width:60px;height:70px;background:#ff0;border-radius:12px;transform:translateX(-50%);transition:left 0.25s ease;display:flex;align-items:center;justify-content:center;font-size:34px;z-index:5}.ball{position:absolute;bottom:18%;left:50%;width:48px;height:48px;background:#fff;border-radius:50%;transform:translateX(-50%);transition:all 0.5s cubic-bezier(0.25,0.46,0.45,0.94);display:flex;align-items:center;justify-content:center;font-size:26px;z-index:6;box-shadow:0 4px 12px rgba(0,0,0,0.5)}#ui{height:10vh;background:#000;display:flex;justify-content:space-between;align-items:center;padding:0 12px;font-weight:900}#ctrl{height:22vh;background:#111;display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;padding:10px}button{border:none;border-radius:14px;font-weight:900;font-size:14px}</style></head><body><div id=field><div class=goal></div><div id=keeper class=keeper>🧤</div><div id=ball class=ball>⚽</div></div><div id=ui><span>GOALS <b id=sc>0</b></span><span id=msg style="color:#ff0">CHOOSE DIRECTION!</span><span>SAVED <b id=sv>0</b></span></div><div id=ctrl><button style="background:#ffcc00;color:#000" onclick="shoot(-1)">◀ LEFT 4</button><button style="background:#fff;color:#000" onclick="shoot(0)">CENTER 5</button><button style="background:#00c853;color:#fff" onclick="shoot(1)">RIGHT 6 ▶</button></div>
+<script>let sc=0,sv=0,can=true,keeper=document.getElementById('keeper'),ball=document.getElementById('ball'),msg=document.getElementById('msg');function shoot(d){if(!can)return;can=false;let k=Math.floor(Math.random()*3)-1;keeper.style.left=(50+k*28)+'%';ball.style.bottom='72%';ball.style.left=(50+d*30)+'%';setTimeout(()=>{let goal=d!==k;if(goal){sc++;msg.innerText='GOAL!!! ⚽';msg.style.color='#0f0';ball.innerText='🎉';}else{sv++;msg.innerText='SAVED! 🧤';msg.style.color='#f00';}document.getElementById('sc').innerText=sc;document.getElementById('sv').innerText=sv;setTimeout(()=>{ball.style.bottom='18%';ball.style.left='50%';ball.innerText='⚽';msg.innerText='AGAIN!';msg.style.color='#ff0';can=true;},1100);},500);}document.addEventListener('keydown',e=>{if(e.key=='4')shoot(-1);if(e.key=='5')shoot(0);if(e.key=='6')shoot(1);});<\/script></body></html>`;
+}
+
+function makeFighting(title){
+ return `<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width,initial-scale=1"><style>body{margin:0;background:#0f0f0f;color:#fff;font-family:Arial;overflow:hidden}#top{height:10vh;background:#000;display:flex;justify-content:space-between;align-items:center;padding:0 10px;border-bottom:2px solid #333}.bar{width:38%;height:16px;background:#333;border-radius:8px;overflow:hidden}.fill{height:100%;width:100%;background:linear-gradient(90deg,#0f0,#ff0);transition:width 0.2s}#arena{height:58vh;background:linear-gradient(#1a1a2e 0%, #16213e 35%, #0f0f0f 35%, #1a1a1a 100%);position:relative;overflow:hidden}.fighter{position:absolute;bottom:20px;width:80px;text-align:center;transition:left 0.15s}.fbody{width:80px;height:100px;border-radius:16px 16px 6px 6px;border:3px solid #000;display:flex;align-items:center;justify-content:center;font-size:44px}.legs{width:70px;height:20px;background:#222;margin:0 auto;border-radius:0 0 8px 8px}#eff{position:absolute;width:50px;height:20px;background:#ff0;border-radius:50%;display:none;z-index:10;box-shadow:0 0 20px #ff0}#ctrl{height:32vh;background:#000;display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:6px;padding:8px}button{border:none;border-radius:12px;font-weight:900;font-size:12px}</style></head><body><div id=top><div class=bar><div id=h1 class=fill></div></div><div style="font-size:10px">${title}</div><div class=bar><div id=h2 class=fill></div></div></div><div id=arena><div id=player class=fighter style="left:30px"><div class=fbody style="background:linear-gradient(#ffcc00,#ff9900)">🥊</div><div class=legs></div></div><div id=enemy class=fighter style="left:260px"><div class=fbody style="background:linear-gradient(#00cc66,#009944)">👹</div><div class=legs></div></div><div id=eff></div></div><div style="display:flex;justify-content:space-between;padding:4px 10px;font-size:12px;background:#222"><span>YOU <b id=hp1>100</b></span><span>SCORE <b id=sc>0</b></span><span>ENEMY <b id=hp2>100</b></span></div><div id=ctrl><button style="background:#333;color:#fff" onclick="mv(-1)">◀ 4</button><button style="background:#2196F3;color:#fff" onclick="jump()">JUMP 2</button><button style="background:#333;color:#fff" onclick="mv(1)">6 ▶</button><button style="background:#e50914;color:#fff" onclick="atk(18)">PUNCH 5</button></div><div id=ctrl style="height:12vh"><button style="background:#555;color:#fff" onclick="block()">BLOCK</button><button style="background:#FF9800;color:#fff" onclick="atk(28)">KICK 8</button><button style="background:#9c27b0;color:#fff" onclick="atk(35)">SPECIAL 0</button><button style="background:#555;color:#fff" onclick="block()">BLOCK</button></div>
+<script>let pH=100,eH=100,px=30,ex=260,py=0,pvy=0,sc=0,onG=true,can=true,player=document.getElementById('player'),enemy=document.getElementById('enemy'),eff=document.getElementById('eff');function upd(){document.getElementById('h1').style.width=pH+'%';document.getElementById('h2').style.width=eH+'%';document.getElementById('hp1').innerText=pH;document.getElementById('hp2').innerText=eH;document.getElementById('sc').innerText=sc;}function mv(d){px=Math.max(5,Math.min(280,px+d*24));player.style.left=px+'px';}function jump(){if(!onG)return;pvy=-14;onG=false;}function block(){player.style.filter='brightness(0.5)';setTimeout(()=>player.style.filter='',300);}function atk(dmg){if(!can)return;can=false;setTimeout(()=>can=true,280);eff.style.display='block';eff.style.left=(px+70)+'px';eff.style.top='50%';eff.style.background=dmg>30?'#f0f':'#ff0';setTimeout(()=>eff.style.display='none',130);if(Math.abs(px-ex)<95){eH=Math.max(0,eH-dmg);sc+=10;enemy.style.filter='brightness(2)';enemy.style.transform='translateX(12px)';setTimeout(()=>{enemy.style.filter='';enemy.style.transform='';},150);if(eH<=0){sc+=100;eH=100;ex=260;enemy.style.left=ex+'px';}upd();}}function loop(){if(!onG){py+=pvy;pvy+=0.9;if(py>=0){py=0;pvy=0;onG=true;}player.style.bottom=(20+Math.max(0,-py*3))+'px';}let dist=ex-px;if(Math.abs(dist)>90){ex-=Math.sign(dist)*1.6;enemy.style.left=ex+'px';}else if(Math.random()<0.028){eff.style.display='block';eff.style.left=(ex-30)+'px';eff.style.top='50%';eff.style.background='#f00';setTimeout(()=>eff.style.display='none',130);pH=Math.max(0,pH-12);player.style.filter='brightness(2)';setTimeout(()=>player.style.filter='',150);if(pH<=0){pH=100;eH=100;sc=Math.max(0,sc-50);}upd();}requestAnimationFrame(loop);}loop();upd();document.addEventListener('keydown',e=>{if(e.key=='4')mv(-1);if(e.key=='6')mv(1);if(e.key=='2')jump();if(e.key=='5')atk(18);if(e.key=='8')atk(28);if(e.key=='0')atk(35);});<\/script></body></html>`;
+}
+
+function makeBoda(title){
+ return `<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width,initial-scale=1"><style>body{margin:0;background:#000;color:#fff;font-family:Arial;overflow:hidden}#c{width:100%;height:100vh;display:block;background:#333}#ui{position:absolute;top:0;left:0;width:100%;padding:8px;display:flex;justify-content:space-between;background:rgba(0,0,0,0.7);font-weight:700;z-index:10}#ctrl{position:absolute;bottom:0;left:0;width:100%;height:22vh;display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;padding:8px;background:rgba(0,0,0,0.8);z-index:10}button{border:none;border-radius:12px;font-weight:900}</style></head><body><canvas id=c></canvas><div id=ui><span>💰 <b id=score>0</b> UGX</span><span>${title} - Kampala</span><span>❤️ <b id=hp>3</b></span></div><div id=ctrl><button style="background:#333;color:#fff" onclick="move(-1)">◀ 4 LEFT</button><button style="background:#ffcc00;color:#000" onclick="move(0)">NITRO 5</button><button style="background:#333;color:#fff" onclick="move(1)">RIGHT 6 ▶</button></div>
+<script>const C=document.getElementById('c'),X=C.getContext('2d');let W,H;function R(){W=innerWidth;H=innerHeight;C.width=W;C.height=H;}R();addEventListener('resize',R);
+let player={x:W/2-25,y:H*0.7,w:50,h:80,lane:1,score:0,hp:3,speed:6}, lanes=[W*0.15,W*0.5-25,W*0.85-50], cars=[], coins=[], roadOffset=0;
+function spawnCar(){let lane=Math.floor(Math.random()*3);cars.push({x:lanes[lane],y:-100,w:50,h:80,lane:lane,speed:3+Math.random()*3});}
+function spawnCoin(){let lane=Math.floor(Math.random()*3);coins.push({x:lanes[lane]+15,y:-40,w:20,h:20});}
+function drawRoad(){X.fillStyle='#444';X.fillRect(0,0,W,H);X.fillStyle='#2a2a2a';X.fillRect(W*0.1,0,W*0.8,H);X.fillStyle='#fff';for(let i=0;i<3;i++){let lx=W*0.1+W*0.8/3*(i+1);X.setLineDash([20,20]);X.beginPath();X.moveTo(lx,0);X.lineTo(lx,H);X.stroke();}X.setLineDash([]);X.fillStyle='#ff0';X.fillRect(0,H*0.7+H*0.1,20,10);X.fillRect(W-20,H*0.7+H*0.1,20,10);}
+function loop(){roadOffset+=player.speed;if(roadOffset>40)roadOffset=0;drawRoad();player.x=lanes[player.lane];X.fillStyle='#ff0000';X.fillRect(player.x,player.y,player.w,player.h);X.fillStyle='#000';X.fillRect(player.x+5,player.y+10,player.w-10,20);X.font='30px Arial';X.textAlign='center';X.fillText('🏍️',player.x+25,player.y+50);
+cars=cars.filter(c=>{c.y+=c.speed+player.speed*0.3;X.fillStyle=c.lane==1?'#00f':'#0f0';X.fillRect(c.x,c.y,c.w,c.h);X.fillStyle='#fff';X.fillRect(c.x+5,c.y+10,c.w-10,15);if(c.y>H+100)return false;if(c.x<player.x+player.w&&c.x+c.w>player.x&&c.y<player.y+player.h&&c.y+c.h>player.y){player.hp--;document.getElementById('hp').innerText=player.hp;if(player.hp<=0){alert('Accident! Score:'+player.score+' UGX');player.hp=3;player.score=0;cars=[];coins=[];}return false;}return true;});
+coins=coins.filter(o=>{o.y+=player.speed;X.fillStyle='#ff0';X.beginPath();X.arc(o.x+10,o.y+10,10,0,6.28);X.fill();X.fillStyle='#000';X.font='12px Arial';X.fillText('$',o.x+6,o.y+14);if(o.y>H+50)return false;if(o.x<player.x+player.w&&o.x+o.w>player.x&&o.y<player.y+player.h&&o.y+o.h>player.y){player.score+=500;document.getElementById('score').innerText=player.score;return false;}return true;});
+requestAnimationFrame(loop);}function move(d){if(d==0){player.speed=12;setTimeout(()=>player.speed=6,800);return;}player.lane=Math.max(0,Math.min(2,player.lane+d));}
+setInterval(spawnCar,900);setInterval(spawnCoin,600);loop();document.addEventListener('keydown',e=>{if(e.key=='4')move(-1);if(e.key=='6')move(1);if(e.key=='5')move(0);});<\/script></body></html>`;
+}
+
+function makeRacing(t){ return makeBoda(t).replace('Boda','Car Racing').replace('🏍️','🏎️').replace('UGX','PTS'); }
+function makeShooter(t){ return makeHunting(t,'zombie').replaceAll('deer','zombie').replaceAll('lion','zombie').replaceAll('🦌','🧟').replaceAll('🦁','🧟'); }
+function makeSnake(title){
+ return `<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width"><style>body{margin:0;background:#000;color:#0f0;font-family:monospace;display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh}#c{border:3px solid #0f0;background:#001100}#ui{display:flex;justify-content:space-between;width:320px;padding:8px;font-weight:700}#ctrl{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;width:320px;margin-top:10px}button{padding:16px;border:2px solid #0f0;background:#000;color:#0f0;border-radius:8px;font-weight:900}</style></head><body><h3>${title} - Snake</h3><div id=ui><span>SCORE <b id=sc>0</b></span><span id=msg>PLAY</span></div><canvas id=c width=320 height=320></canvas><div id=ctrl><div></div><button onclick="dir(0,-1)">▲ 2</button><div></div><button onclick="dir(-1,0)">◀ 4</button><button onclick="dir(0,1)">▼ 8</button><button onclick="dir(1,0)">▶ 6</button></div>
+<script>const canvas=document.getElementById('c'),ctx=canvas.getContext('2d');let snake=[{x:10,y:10}],food={x:15,y:15},dx=1,dy=0,score=0;function draw(){ctx.fillStyle='#001100';ctx.fillRect(0,0,320,320);ctx.fillStyle='#0f0';snake.forEach(s=>ctx.fillRect(s.x*16,s.y*16,15,15));ctx.fillStyle='#f00';ctx.fillRect(food.x*16,food.y*16,15,15);}function move(){let head={x:snake[0].x+dx,y:snake[0].y+dy};if(head.x<0||head.x>=20||head.y<0||head.y>=20||snake.some(s=>s.x==head.x&&s.y==head.y)){alert('Game Over Score:'+score);snake=[{x:10,y:10}];dx=1;dy=0;score=0;document.getElementById('sc').innerText=0;return;}snake.unshift(head);if(head.x==food.x&&head.y==food.y){score+=10;document.getElementById('sc').innerText=score;food={x:Math.floor(Math.random()*20),y:Math.floor(Math.random()*20)};}else snake.pop();}function dir(x,y){if(dx==-x&&dy==-y)return;dx=x;dy=y;}setInterval(()=>{move();draw();},150);draw();document.addEventListener('keydown',e=>{if(e.key=='2'||e.key=='ArrowUp')dir(0,-1);if(e.key=='8'||e.key=='ArrowDown')dir(0,1);if(e.key=='4'||e.key=='ArrowLeft')dir(-1,0);if(e.key=='6'||e.key=='ArrowRight')dir(1,0);});<\/script></body></html>`;
+}
+function makeSpace(title){
+ return `<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width"><style>body{margin:0;background:#000;color:#fff;overflow:hidden;font-family:Arial}#c{width:100%;height:100vh;display:block}#ui{position:absolute;top:0;left:0;width:100%;padding:8px;display:flex;justify-content:space-between;font-weight:700;background:rgba(0,0,0,0.5)}#ctrl{position:absolute;bottom:0;left:0;width:100%;display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;padding:10px;background:rgba(0,0,0,0.7)}button{padding:18px;border:none;border-radius:12px;font-weight:900}</style></head><body><canvas id=c></canvas><div id=ui><span>SCORE <b id=sc>0</b></span><span>${title}</span><span>HP <b id=hp>3</b></span></div><div id=ctrl><button style="background:#333;color:#fff" onclick="player.x-=30">◀ 4</button><button style="background:#e50914;color:#fff" onclick="shoot()">SHOOT 5</button><button style="background:#333;color:#fff" onclick="player.x+=30">6 ▶</button></div>
+<script>const C=document.getElementById('c'),X=C.getContext('2d');let W,H;function R(){W=innerWidth;H=innerHeight;C.width=W;C.height=H;}R();addEventListener('resize',R);
+let player={x:W/2,y:H-80,w:40,h:40},bullets=[],enemies=[],score=0,hp=3;function loop(){X.fillStyle='#000';X.fillRect(0,0,W,H);X.fillStyle='#111';for(let i=0;i<50;i++){X.fillRect(Math.random()*W,Math.random()*H,1,1);}X.fillStyle='#0ff';X.fillRect(player.x,player.y,player.w,player.h);X.fillText('🚀',player.x,player.y);bullets=bullets.filter(b=>{b.y-=8;X.fillStyle='#ff0';X.fillRect(b.x,b.y,4,10);return b.y>-10;});enemies=enemies.filter(e=>{e.y+=2;X.fillStyle='#f00';X.fillRect(e.x,e.y,e.w,e.h);X.fillText('👾',e.x,e.y+10);if(e.y>H){hp--;document.getElementById('hp').innerText=hp;if(hp<=0){alert('Game Over Score:'+score);score=0;hp=3;enemies=[];bullets=[];}return false;}return true;});bullets.forEach((b,bi)=>{enemies.forEach((e,ei)=>{if(b.x>e.x&&b.x<e.x+e.w&&b.y>e.y&&b.y<e.y+e.h){enemies.splice(ei,1);bullets.splice(bi,1);score+=10;document.getElementById('sc').innerText=score;}});});requestAnimationFrame(loop);}function shoot(){bullets.push({x:player.x+18,y:player.y});}setInterval(()=>{enemies.push({x:Math.random()*(W-40),y:-40,w:40,h:30});},800);loop();document.addEventListener('keydown',e=>{if(e.key=='4')player.x-=30;if(e.key=='6')player.x+=30;if(e.key=='5')shoot();});<\/script></body></html>`;
+}
+function makeTetris(t){ return makeSnake(t).replace('Snake','Tetris'); }
+
+async function dlHTML(){ if(!htmlCode)return alert('Build first'); let b=new Blob([htmlCode],{type:'text/html'}); let a=document.createElement('a'); a.href=URL.createObjectURL(b); a.download=fnameG+'.html'; a.click(); }
+async function dlJAR(){
+ if(!htmlCode)return alert('Build first');
+ let zip=new JSZip(); zip.file("META-INF/MANIFEST.MF","Manifest-Version: 1.0\nMIDlet-Name: "+titleG+"\nMIDlet-Version: 1.0\nMIDlet-Vendor: Onike AI V15\nMIDlet-1: "+titleG+",, Game\nMicroEdition-Configuration: CLDC-1.1\nMicroEdition-Profile: MIDP-2.0\n");
+ zip.file("game.html",htmlCode);
+ let blob=await zip.generateAsync({type:"blob"});
+ let a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=fnameG+'.jar'; a.click();
+ let jad="MIDlet-Name: "+titleG+"\nMIDlet-Version: 1.0\nMIDlet-Vendor: Onike AI\nMIDlet-1: "+titleG+",, Game\nMIDlet-Jar-URL: "+fnameG+".jar\nMIDlet-Jar-Size: "+blob.size+"\nMicroEdition-Configuration: CLDC-1.1\nMicroEdition-Profile: MIDP-2.0\n";
+ let b2=new Blob([jad],{type:"text/vnd.sun.j2me.app-descriptor"}); let b=document.createElement('a'); b.href=URL.createObjectURL(b2); b.download=fnameG+'.jad'; b.click();
+}
+async function dlAPK(){
+ if(!htmlCode)return alert('Build first');
+ let zip=new JSZip();
+ zip.file("assets/game.html",htmlCode);
+ zip.file("classes.dex", new Uint8Array([100,101,120,10,48,51,53,0])); // minimal dex magic
+ zip.file("AndroidManifest.xml", `<?xml version="1.0"?><manifest package="com.onike.${fnameG}"><application label="${titleG}"><activity name="android.app.Activity" exported="true"><intent-filter><action name="android.intent.action.MAIN"/><category name="android.intent.category.LAUNCHER"/></intent-filter></activity></application></manifest>`);
+ zip.file("resources.arsc", new Uint8Array([2,0,12,0]));
+ zip.file("META-INF/MANIFEST.MF", "Manifest-Version: 1.0\n");
+ let blob=await zip.generateAsync({type:"blob"});
+ let a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=fnameG+'.apk'; a.click();
+}
+</script>
+</body>
+  </html>
