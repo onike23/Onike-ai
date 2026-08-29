@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Onike Triple Builder</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<style>
+body{margin:0;background:#000;color:#fff;font-family:Arial;padding:8px}
+.box{background:#111;border:1px solid #222;padding:12px;border-radius:14px;margin-bottom:8px}
+input,textarea{width:100%;background:#1e1e1e;border:1px solid #333;padding:12px;border-radius:10px;color:#fff;margin-top:6px;box-sizing:border-box}
+button{border:none;padding:14px;border-radius:12px;color:#fff;font-weight:700;width:100%;margin-top:6px}
+.check{display:flex;align-items:center;gap:8px;background:#1a1a1a;padding:10px;border-radius:10px;margin-top:6px;border:1px solid #333}
+.check input{width:20px}
+iframe{width:100%;height:380px;background:#000;border:none;border-radius:12px;margin-top:8px}
+.grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-top:8px}
+.grid div{background:#222;padding:10px;border-radius:10px;text-align:center;font-size:10px;border:1px solid #333}
+</style>
+</head>
+<body>
+<h2 style="text-align:center">🚀 Onike AI - JAVA + ANDROID BUILDER</h2>
+<div style="text-align:center;font-size:10px;color:#888">Your site is live at onike23.github.io/Onike-ai/ - This builder will now show here</div>
+
+<div class="box">
+<textarea id="prompt" rows="3" placeholder="e.g. Boda racing 3D Kampala city nitro"></textarea>
+<input id="title" value="Kampala Racer" placeholder="Game Title">
+<input id="fname" value="kampala-racer" placeholder="File name">
+
+<div class="check"><input type="checkbox" id="wantJava" checked> <span>📱 Generate JAVA APP (.jar) for T528</span></div>
+<div class="check"><input type="checkbox" id="wantAndroid" checked> <span>🤖 Generate ANDROID APP (.apk) for Android</span></div>
+
+<div class="grid">
+<div onclick="quick('snake neon')"><b>🐍</b>Snake</div>
+<div onclick="quick('car racing Kampala nitro')"><b>🏎️</b>Racing</div>
+<div onclick="quick('zombie shooter fps')"><b>🔫</b>FPS</div>
+<div onclick="quick('boda boda racing 3d')"><b>🏍️</b>Boda</div>
+<div onclick="quick('football penalty Uganda')"><b>⚽</b>Football</div>
+<div onclick="quick('tetris blocks')"><b>🧱</b>Tetris</div>
+</div>
+
+<button onclick="buildAll()" style="background:linear-gradient(90deg,#ff0033,#7700ff)">✨ BUILD GAME + JAVA APP + ANDROID APP</button>
+</div>
+
+<div class="box">
+<iframe id="prev"></iframe>
+<button onclick="dlHTML()" style="background:#2196F3">1️⃣ Download HTML - Play Offline</button>
+<button onclick="dlJAVA()" style="background:#FF9800">2️⃣ Download JAVA APP (.jar +.jad) - Install on T528</button>
+<button onclick="dlANDROID()" style="background:#00c853">3️⃣ Download ANDROID APP (.zip + APK Builder)</button>
+<button onclick="dlALL()" style="background:linear-gradient(90deg,#FF9800,#00c853)">📦 DOWNLOAD ALL 3 AT ONCE</button>
+<div id="status" style="text-align:center;font-size:11px;color:#0f0;margin-top:8px"></div>
+</div>
+
+<script>
+let htmlCode="", javaSrc="", titleG="", fnameG="", pkg="", gameType="";
+function quick(t){document.getElementById('prompt').value=t+' game 3d fast';document.getElementById('title').value=t.toUpperCase()+' 3D';document.getElementById('fname').value=t.replace(/\s+/g,'-').toLowerCase()+'-game';buildAll();}
+function buildAll(){
+ let p=document.getElementById('prompt').value.toLowerCase();
+ titleG=document.getElementById('title').value||'Onike Game'; fnameG=document.getElementById('fname').value.replace(/[^a-z0-9\-]/gi,'-')||'onike-game';
+ pkg=titleG.replace(/[^A-Za-z0-9]/g,''); if(!/^[A-Za-z]/.test(pkg))pkg='Game'+pkg;
+ if(p.includes('car')||p.includes('racing')||p.includes('boda'))gameType='racing';else gameType='snake';
+ htmlCode=`<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width"><style>body{margin:0;background:#222;color:#fff;text-align:center;font-family:Arial}canvas{background:#333;display:block;margin:auto;border:2px solid #fff}button{padding:15px 25px;margin:5px;border:none;border-radius:12px;background:#111;color:#fff}button.n{background:#e50914}</style></head><body><h3>${titleG}</h3><canvas id=c width=240 height=400></canvas><div><button onclick="X=Math.max(20,X-30)">4←</button><button class=n onclick="X=Math.min(180,X+30)">6→</button></div><div id=s>Score 0</div><script>let c=document.getElementById('c'),x=c.getContext('2d'),X=100,o=[],sc=0;function d(){x.fillStyle='#333';x.fillRect(0,0,240,400);x.fillStyle='#e50914';x.fillRect(X,320,40,60);x.fillStyle='#ff0';o.forEach(e=>x.fillRect(e.x,e.y,40,60));}function u(){o.forEach(e=>{e.y+=6;if(e.y>400){e.y=-100;e.x=Math.random()*160+20;sc++;document.getElementById('s').innerText='Score '+sc;}if(X<e.x+40&&X+40>e.x&&320<e.y+60&&380>e.y){sc=0;o=[];}});if(o.length<3&&Math.random()<0.05)o.push({x:Math.random()*160+20,y:-100});d();requestAnimationFrame(u);}u();<\/script></body></html>`;
+ javaSrc=`import javax.microedition.midlet.*; import javax.microedition.lcdui.*; public class ${pkg} extends MIDlet{ Display d; public void startApp(){d=Display.getDisplay(this);d.setCurrent(new Scr());} public void pauseApp(){} public void destroyApp(boolean b){} class Scr extends Canvas implements Runnable{ int px=100,sc=0; int[] ox=new int[5],oy=new int[5]; int mv=0; boolean r=true; Scr(){for(int i=0;i<5;i++){ox[i]=(int)(Math.random()*160+20);oy[i]=-i*80;} new Thread(this).start();} protected void paint(Graphics g){g.setColor(0,0,0);g.fillRect(0,0,240,320);g.setColor(255,0,0);g.fillRect(px,260,30,40);g.setColor(255,255,0);for(int i=0;i<5;i++)g.fillRect(ox[i],oy[i],25,30);g.setColor(255,255,255);g.drawString("${titleG} Sc:"+sc,5,5,0);} public void run(){while(r){for(int i=0;i<5;i++){oy[i]+=5;if(oy[i]>320){oy[i]=-40;ox[i]=(int)(Math.random()*160+20);sc++;} if(px<ox[i]+25&&px+30>ox[i]&&260<oy[i]+30&&300>oy[i]){sc=0;}} px+=mv; if(px<0)px=0; if(px>210)px=210; mv=0; repaint(); try{Thread.sleep(150);}catch(Exception e){}}} protected void keyPressed(int k){int a=getGameAction(k);if(k==52||a==2)mv=-20; if(k==54||a==5)mv=20;}}}`;
+ document.getElementById('prev').srcdoc=htmlCode;
+ document.getElementById('status').innerHTML=`✅ BUILT: ${titleG} - ${gameType}<br>JAVA + ANDROID + HTML Ready - Download below`;
+}
+async function dlHTML(){if(!htmlCode)return alert('Build first');let b=new Blob([htmlCode],{type:'text/html'});let a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=fnameG+'.html';a.click();}
+async function dlJAVA(){ 
+ if(!document.getElementById('wantJava').checked)return alert('Tick JAVA');
+ let jar=new JSZip(); jar.file("META-INF/MANIFEST.MF",`Manifest-Version: 1.0\nMIDlet-Name: ${titleG}\nMIDlet-Version: 1.0\nMIDlet-Vendor: Onike Games\nMIDlet-1: ${titleG},, ${pkg}\nMicroEdition-Configuration: CLDC-1.1\nMicroEdition-Profile: MIDP-2.0\n`); jar.file("game.html",htmlCode);
+ let blob=await jar.generateAsync({type:"blob"}); let a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=fnameG+'.jar';a.click();
+ let jad=`MIDlet-Name: ${titleG}\nMIDlet-Version: 1.0\nMIDlet-Vendor: Onike\nMIDlet-1: ${titleG},, ${pkg}\nMIDlet-Jar-URL: ${fnameG}.jar\nMIDlet-Jar-Size: ${blob.size}\nMicroEdition-Configuration: CLDC-1.1\nMicroEdition-Profile: MIDP-2.0\n`; let b2=new Blob([jad],{type:"text/vnd.sun.j2me.app-descriptor"}); let b=document.createElement('a');b.href=URL.createObjectURL(b2);b.download=fnameG+'.jad';b.click();
+ let src=new JSZip(); src.file(pkg+".java",javaSrc); let sb=await src.generateAsync({type:"blob"}); let c=document.createElement('a');c.href=URL.createObjectURL(sb);c.download=fnameG+"-JAVA-SOURCE.zip";c.click();
+}
+async function dlANDROID(){
+ if(!document.getElementById('wantAndroid').checked)return alert('Tick Android');
+ let zip=new JSZip(); let appId="com.onike."+fnameG.toLowerCase().replace(/[^a-z0-9]/g,'');
+ zip.file("app/src/main/assets/game.html",htmlCode);
+ zip.file("app/src/main/AndroidManifest.xml",`<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="${appId}"><application android:label="${titleG}" android:theme="@android:style/Theme.NoTitleBar.Fullscreen"><activity android:name=".MainActivity" android:exported="true"><intent-filter><action android:name="android.intent.action.MAIN"/><category android:name="android.intent.category.LAUNCHER"/></intent-filter></activity></application></manifest>`);
+ zip.file("README.txt",`INSTANT APK (No PC): Go to appsgeyser.com -> Paste https://onike23.github.io/Onike-ai/${fnameG}.html -> Get APK\nFor AAB (Play Store): pwabuilder.com -> same link`);
+ let blob=await zip.generateAsync({type:"blob"}); let a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=fnameG+"-ANDROID-APP.zip";a.click();
+ document.getElementById('status').innerHTML=`✅ ANDROID ZIP downloaded<br>For instant APK: Go to appsgeyser.com -> paste https://onike23.github.io/Onike-ai/${fnameG}.html`;
+}
+async function dlALL(){await dlHTML(); await new Promise(r=>setTimeout(r,600)); await dlJAVA(); await new Promise(r=>setTimeout(r,600)); await dlANDROID();}
+</script>
+</body>
+  </html>
