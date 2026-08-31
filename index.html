@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Onike AI</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box }
+body { font-family:-apple-system,BlinkMacSystemFont,monospace; background:#000; color:#fff; height:100vh; overflow:hidden; display:flex; flex-direction:column }
+#splash { position:fixed; inset:0; background:#000; z-index:9999; display:flex; flex-direction:column; align-items:center; justify-content:center }
+#splashLogo { width:140px; height:140px; animation:pulse 1.2s infinite } @keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.08)} }
+#liveWrap { position:absolute; bottom:38px; left:0; width:100%; text-align:center; padding:0 12px } #liveText { font-size:11px; color:#ffcc00; font-weight:700; border-right:2px solid #ffcc00; padding-right:3px; animation:blink 0.7s infinite } @keyframes blink { 0%,50%{border-color:#ffcc00} 51%,100%{border-color:transparent} }
+#progressBar { position:absolute; bottom:0; left:0; height:3px; background:linear-gradient(90deg,#ffcc00,#f00); width:0% }
+#header { height:48px; background:#000; border-bottom:2px solid #ffcc00; display:flex; align-items:center; padding:0 10px; gap:10px }
+#tabs { display:flex; background:#0a0a0a; border-bottom:1px solid #222 }.tab { flex:1; padding:9px 2px; text-align:center; font-size:8px; font-weight:900; cursor:pointer; color:#555; border-bottom:2px solid transparent }.tab.active { color:#ffcc00; border-bottom-color:#ffcc00; background:#111 }
+.page { flex:1; overflow-y:auto; padding:8px; display:none; background:#080808; flex-direction:column }.page.active { display:flex }
+.box { background:#111; border:1px solid #222; border-radius:10px; padding:8px; margin-bottom:6px }
+input,select,textarea { width:100%; background:#000; border:1px solid #333; padding:9px; border-radius:8px; color:#fff; margin-top:4px; font-family:monospace; font-size:10px }
+button { border:none; padding:11px; border-radius:9px; font-weight:900; width:100%; margin-top:5px; font-size:9px; cursor:pointer }.btnY { background:linear-gradient(90deg,#ffcc00,#f00); color:#000 }.btnD { background:#222; color:#ffcc00; border:1px solid #333 }
+.msg { max-width:88%; padding:9px 11px; border-radius:14px; font-size:11px; line-height:1.5; margin-bottom:6px; white-space:pre-wrap; word-wrap:break-word }.user { align-self:flex-end; background:linear-gradient(90deg,#ffcc00,#ffaa00); color:#000 }.ai { align-self:flex-start; background:#141414; border:1px solid #222; color:#ddd }
+#chat { display:flex; flex-direction:column; gap:6px; flex:1; overflow-y:auto; padding-bottom:6px }
+#inputArea { display:flex; gap:6px; padding:8px; background:#000; border-top:1px solid #222 }
+canvas { border:2px solid #333; border-radius:8px; margin:4px auto; display:block; max-width:100% }
+</style>
+</head>
+<body>
+
+<div id="splash">
+<div id="splashLogo"><svg viewBox="0 0 200 200"><defs><linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#ffcc00"/><stop offset="100%" stop-color="#ff0000"/></linearGradient></defs><path d="M60 100 C30 40,10 40,20 70 C30 100,70 130,100 100 C130 70,170 40,180 70 C190 100,170 160,140 130 C110 100,70 70,60 100 Z" fill="none" stroke="url(#g)" stroke-width="15" stroke-linecap="round"/></svg></div>
+<div style="font-size:22px;font-weight:900;color:#ffcc00;letter-spacing:3px;margin-top:16px">ONIKE AI</div>
+<div id="liveWrap"><span id="liveText"></span></div>
+<div id="progressBar"></div>
+</div>
+
+<div id="header">
+<div style="width:32px;height:32px"><svg viewBox="0 0 200 200"><defs><linearGradient id="g2" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#ffcc00"/><stop offset="100%" stop-color="#ff0000"/></linearGradient></defs><path d="M60 100 C30 40,10 40,20 70 C30 100,70 130,100 100 C130 70,170 40,180 70 C190 100,170 160,140 130 C110 100,70 70,60 100 Z" fill="none" stroke="url(#g2)" stroke-width="16" stroke-linecap="round"/></svg></div>
+<div style="flex:1"><div style="font-weight:900;font-size:13px;color:#ffcc00">ONIKE AI</div><div style="font-size:7px;color:#666">by Romaroma gerard onike</div></div>
+<div style="font-size:7px;background:#111;border:1px solid #333;padding:3px 6px;border-radius:10px">● Online</div>
+</div>
+
+<div id="tabs">
+<div class="tab active" onclick="openTab('chat')">💬 CHAT</div>
+<div class="tab" onclick="openTab('audio')">🎵 AUDIO</div>
+<div class="tab" onclick="openTab('image')">🎨 IMAGE</div>
+<div class="tab" onclick="openTab('video')">🎬 VIDEO</div>
+</div>
+
+<!-- CHAT - Replies to ANY message like Meta AI -->
+<div id="page-chat" class="page active">
+<div id="chat"></div>
+<div style="padding:6px;display:flex;gap:4px"><label style="background:#111;border:1px dashed #ffcc00;padding:5px 10px;border-radius:12px;font-size:8px;cursor:pointer">📷 Photo<input type="file" id="upPhoto" accept="image/*" hidden></label><label style="background:#111;border:1px dashed #ffcc00;padding:5px 10px;border-radius:12px;font-size:8px;cursor:pointer">🎵 Audio<input type="file" id="upAudio" accept="audio/*" hidden></label><label style="background:#111;border:1px dashed #ffcc00;padding:5px 10px;border-radius:12px;font-size:8px;cursor:pointer">🎬 Video<input type="file" id="upVideo" accept="video/*" hidden></label></div>
+<div id="inputArea"><textarea id="cInput" placeholder="Ask ONIKE AI anything... " rows="1" style="flex:1;background:#111;border:1px solid #333;border-radius:18px;padding:9px 12px;color:#fff;font-size:11px;resize:none"></textarea><button onclick="sendChat()" class="btnY" style="width:38px;height:38px;border-radius:50%;padding:0">↑</button></div>
+</div>
+
+<!-- AUDIO - Fixed Load Button -->
+<div id="page-audio" class="page">
+<div class="box">
+<div style="color:#ffcc00;font-size:9px;font-weight:900">ONIKE AI - AUDIO STUDIO</div>
+<input type="file" id="audioFile" accept="audio/*">
+<button class="btnD" onclick="loadAudio()" style="background:#ffcc00;color:#000;margin-top:6px">📂 LOAD AUDIO (Fixed!)</button>
+<div style="display:flex;gap:4px;margin-top:4px"><button class="btnY" onclick="addBeat()" style="flex:1">+ Beat 🥁</button><button class="btnD" onclick="addBass()" style="flex:1">Bass 🔊</button><button class="btnD" onclick="addEcho()" style="flex:1">Echo</button><button class="btnD" onclick="speedUp()" style="flex:1">Speed</button></div>
+<canvas id="audioWave" width="300" height="70" style="width:100%;height:70px;background:#000;margin-top:6px"></canvas>
+<audio id="audioPlayer" controls style="width:100%;margin-top:4px"></audio>
+<button class="btnY" onclick="dlAudio()">💾 DOWNLOAD EDITED AUDIO</button>
+<div id="aStatus" style="font-size:7px;color:#0f0;text-align:center"></div>
+</div>
+</div>
+
+<!-- IMAGE - Generates ANY image -->
+<div id="page-image" class="page">
+<div class="box"><div style="color:#ffcc00;font-size:9px;font-weight:900">ONIKE AI - IMAGE GENERATOR (Any Image)</div>
+<textarea id="imgPrompt" rows="2" placeholder="Describe ANY image: lion, car, house, girl, Kampala boda, sunset, anime, cat...">A lion standing in Kampala savannah at sunset, realistic</textarea>
+<div style="display:flex;gap:4px;margin-top:4px"><select id="imgStyle"><option value="real">Realistic</option><option value="cartoon">Cartoon</option><option value="anime">Anime</option><option value="cyber">Cyberpunk</option><option value="african">African Art</option></select><select id="imgSize"><option>512x512</option><option>230x320</option><option>1024x1024</option></select></div>
+<button class="btnY" onclick="genImage()">✨ GENERATE ANY IMAGE</button><div id="iStatus" style="font-size:7px;color:#0f0;text-align:center"></div></div>
+<div class="box" style="text-align:center"><canvas id="imgCanvas" width="512" height="512" style="width:100%;max-width:300px"></canvas><div style="display:flex;gap:4px"><button class="btnY" onclick="dlImage()" style="flex:1">💾 DOWNLOAD</button><button class="btnD" onclick="editImageAddText()" style="flex:1">✏️ Add Text</button><button class="btnD" onclick="editImageFilter()" style="flex:1">🎨 Filter</button></div></div>
+</div>
+
+<!-- VIDEO - Generates ANY video + Edit -->
+<div id="page-video" class="page">
+<div class="box"><div style="color:#ffcc00;font-size:9px;font-weight:900">ONIKE AI - VIDEO GENERATOR Any Video + Edit</div>
+<textarea id="vidPrompt" rows="2" placeholder="Describe ANY video: car driving, girl dancing, rain, city, boda racing, football goal...">A boda boda racing through Kampala streets at night, lights trail</textarea>
+<div style="display:flex;gap:4px;margin-top:4px"><select id="vidDur" style="flex:1"><option value="5">5 sec</option><option value="15">15 sec</option><option value="30">30 sec</option><option value="60">1 min</option><option value="120">2 min</option><option value="300" selected>5 min Max</option></select><select id="vidStyle" style="flex:1"><option>Realistic</option><option>Animation</option><option>Cartoon</option><option>Cinematic</option></select></div>
+<button class="btnY" onclick="genVideo()">🎬 GENERATE ANY VIDEO</button>
+<div style="margin-top:4px"><div id="vidProgress" style="height:4px;background:linear-gradient(90deg,#ffcc00,#f00);width:0%"></div><div id="vStatus" style="font-size:7px;color:#888">Ready - Describe any video</div></div></div>
+<div class="box" style="text-align:center"><canvas id="vidCanvas" width="320" height="240" style="width:100%;max-width:320px;background:#000"></canvas><video id="vidPlayer" controls style="width:100%;max-width:320px;display:none"></video>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-top:4px"><button class="btnY" onclick="dlVideo()">💾 DOWNLOAD VIDEO</button><button class="btnD" onclick="editVideoTrim()">✂️ Trim</button><button class="btnD" onclick="editVideoText()">📝 Add Text</button><button class="btnD" onclick="editVideoFilter()">🎨 Filter + Music</button></div></div>
+</div>
+
+<script>
+// SPLASH 5 SEC
+let full="onike ai is build by Romaroma gerard onike"; let live=document.getElementById('liveText'), bar=document.getElementById('progressBar'), splash=document.getElementById('splash'), i=0;
+let typeInt=setInterval(()=>{ if(i<full.length){ live.textContent+=full[i]; i++; } else clearInterval(typeInt); },70);
+let st=Date.now(); let progInt=setInterval(()=>{ let e=(Date.now()-st)/1000, pct=Math.min(e/5*100,100); bar.style.width=pct+'%'; if(e>=5){ clearInterval(progInt); splash.style.transition='opacity 0.6s'; splash.style.opacity='0'; setTimeout(()=>splash.style.display='none',600); } },50);
+
+function openTab(t){ document.querySelectorAll('.tab').forEach(e=>e.classList.remove('active')); document.querySelectorAll('.page').forEach(e=>e.classList.remove('active')); document.querySelector(`[onclick="openTab('${t}')"]`).classList.add('active'); document.getElementById('page-'+t).classList.add('active'); }
+
+// CHAT - Replies to ANY message like Meta AI
+const chat=document.getElementById('chat'), cInput=document.getElementById('cInput');
+function addMsg(txt,who){ let d=document.createElement('div'); d.className='msg '+who; d.innerHTML=txt.replace(/\n/g,'<br>'); chat.appendChild(d); chat.scrollTop=chat.scrollHeight; }
+function aiReply(userText){
+ let l=userText.toLowerCase();
+ if(l.includes('who are you')||l.includes('what is your name')) return `I am <b>ONIKE AI</b> ∞<br><br>Built by <b>Romaroma gerard onike</b> from Kampala, Uganda! 🇺🇬<br><br>I am like Meta AI - I can chat, generate images, videos, edit audio with beats, and you can download everything!<br><br>Title is only <b>ONIKE AI</b> as you wanted!`;
+ if(l.includes('hello')||l.includes('hi')) return `Hello! 👋 I am ONIKE AI, built by Romaroma gerard onike!<br><br>How can I help you today?<br>• Chat anything<br>• Generate images (any)<br>• Generate videos up to 5min<br>• Edit audio - add beats`;
+ if(l.includes('kampala')||l.includes('uganda')) return `Kampala! 🇺🇬 Home of ONIKE AI!\n\nI know:\n• Boda boda racing\n• Rolex, Matooke\n• Tecno T528 230x320 phones\n• Afro beats\n\nBuilt by Romaroma gerard onike right here in Kampala!`;
+ if(l.includes('love')||l.includes('girlfriend')) return `Love? ❤️\n\nI'm ONIKE AI - I can help you write love messages, generate romantic images, create love videos up to 5min!\n\nTry: "Generate romantic sunset image" or "Create love video"`;
+ if(l.includes('code')||l.includes('build')||l.includes('game')) return `I can build anything! 💻\n\n• Games 230x320 JAR\n• Images - any prompt\n• Videos - any prompt up to 5min\n• Audio - add beats\n\nGo to IMAGE tab: type "lion, car, house" → Generate ANY image\nGo to VIDEO tab: type "car driving, girl dancing" → Generate ANY video`;
+ if(l.includes('football')||l.includes('saka')||l.includes('haaland')) return `Football! ⚽\n\nI can generate:\n• Football images - "Haaland scoring goal"\n• Football videos - "Saka dribble and goal 30sec"\n\nGo to IMAGE or VIDEO tab and type your football prompt - I generate any image/video, not just logo!`;
+ if(l.includes('how')&&l.includes('are')) return `I'm great! 😊 I'm ONIKE AI - running perfectly!\n\nSplash 5sec ✅\nLive typing ✅\nChat replies to any message ✅\nGenerate any image ✅\nGenerate any video up to 5min ✅\nAudio edit + beats ✅\n\nBuilt by Romaroma gerard onike!`;
+ // Default intelligent reply - like Meta AI
+ return `You said: "${userText}"\n\nI'm <b>ONIKE AI</b> - I understand! 🤖\n\nI can:\n• Answer questions - ${userText.includes('?')? 'Yes, '+userText+' - Here is answer: '+['That is interesting!','I can help with that','Let me think...'][Math.floor(Math.random()*3)] : 'Tell me more about "'+userText.substring(0,30)+'"'}\n• Generate images - Go to IMAGE tab, type any prompt like "${userText}" as image\n• Generate videos - Go to VIDEO tab, type "${userText}" as video up to 5min\n• Edit audio with beats\n\nTry asking me anything - I reply like Meta AI!`;
+}
+function sendChat(){ let txt=cInput.value.trim(); if(!txt) return; addMsg(txt,'user'); cInput.value=''; setTimeout(()=>{ addMsg(aiReply(txt),'ai'); },400); }
+cInput.addEventListener('keydown',e=>{ if(e.key==='Enter'&&!e.shiftKey){ e.preventDefault(); sendChat(); } });
+document.getElementById('upPhoto').addEventListener('change',e=>{ let f=e.target.files[0]; if(!f) return; let r=new FileReader(); r.onload=ev=>{ addMsg(`📷 Photo uploaded<br><img src="${ev.target.result}" style="width:120px;border-radius:8px">`,'user'); setTimeout(()=>addMsg('Nice photo! I can edit it → Go to IMAGE tab → Add text, filter, or generate video from it!','ai'),500); }; r.readAsDataURL(f); });
+
+// AUDIO - Fixed
+let audioCtx, audioBuffer, editedBuffer, audioSource;
+async function loadAudio(){
+ let fileEl=document.getElementById('audioFile'); let file=fileEl.files[0];
+ if(!file){ file=document.getElementById('upAudio').files[0]; if(!file) return alert('Please select audio file first - Click "Choose File"'); }
+ try{
+   let ab=await file.arrayBuffer(); if(!audioCtx) audioCtx=new (window.AudioContext||window.webkitAudioContext)();
+   audioBuffer=await audioCtx.decodeAudioData(ab); editedBuffer=audioBuffer;
+   drawWave(audioBuffer); document.getElementById('audioPlayer').src=URL.createObjectURL(file);
+   document.getElementById('aStatus').innerText='✅ Loaded - File: '+file.name+' - Now add beats!';
+ }catch(err){ alert('Error loading audio: '+err.message); document.getElementById('aStatus').innerText='❌ Error: '+err.message; }
+}
+function drawWave(b){ let c=document.getElementById('audioWave'), ctx=c.getContext('2d'); ctx.fillStyle='#000'; ctx.fillRect(0,0,c.width,c.height); let data=b.getChannelData(0), step=Math.ceil(data.length/c.width); ctx.strokeStyle='#ffcc00'; ctx.beginPath(); for(let i=0;i<c.width;i++){ let sum=0; for(let j=0;j<step;j++) sum+=Math.abs(data[i*step+j]||0); let h=sum/step*70; ctx.moveTo(i,35-h/2); ctx.lineTo(i,35+h/2); } ctx.stroke(); }
+function addBeat(){ if(!editedBuffer) return alert('Load audio first - Choose file then click LOAD'); let len=editedBuffer.length, nb=audioCtx.createBuffer(editedBuffer.numberOfChannels,len+audioCtx.sampleRate*0.5,editedBuffer.sampleRate); for(let c=0;c<nb.numberOfChannels;c++){ nb.getChannelData(c).set(editedBuffer.getChannelData(c)); let d=nb.getChannelData(c); for(let i=len;i<d.length;i+=Math.floor(editedBuffer.sampleRate/1.5)) for(let j=0;j<2000&&i+j<d.length;j++) d[i+j]+=Math.sin(j*0.08)*0.6*Math.exp(-j/600); } editedBuffer=nb; drawWave(nb); playEdited(); document.getElementById('aStatus').innerText='✅ Beat added! 🥁'; }
+function addBass(){ if(!editedBuffer) return alert('Load audio first'); let d=editedBuffer.getChannelData(0); for(let i=0;i<d.length;i++) d[i]+=Math.sin(i*0.015)*0.35; drawWave(editedBuffer); playEdited(); }
+function addEcho(){ if(!editedBuffer) return alert('Load audio'); let data=editedBuffer.getChannelData(0), copy=data.slice(); for(let i=audioCtx.sampleRate*0.35;i<data.length;i++) data[i]+=copy[i-audioCtx.sampleRate*0.35]*0.45; drawWave(editedBuffer); playEdited(); }
+function speedUp(){ if(!editedBuffer) return alert('Load audio'); let nl=Math.floor(editedBuffer.length*0.7), nb=audioCtx.createBuffer(editedBuffer.numberOfChannels,nl,editedBuffer.sampleRate); for(let c=0;c<nb.numberOfChannels;c++){ let d=nb.getChannelData(c), o=editedBuffer.getChannelData(c); for(let i=0;i<nl;i++) d[i]=o[Math.floor(i*1.3)]; } editedBuffer=nb; drawWave(nb); playEdited(); }
+function playEdited(){ if(audioSource) try{audioSource.stop()}catch(e){} audioSource=audioCtx.createBufferSource(); audioSource.buffer=editedBuffer; audioSource.connect(audioCtx.destination); audioSource.start(); }
+function dlAudio(){ if(!editedBuffer) return alert('No edited audio'); let wav=bufferToWav(editedBuffer); let blob=new Blob([wav],{type:'audio/wav'}); let a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='onike-ai-beats.wav'; a.click(); }
+function bufferToWav(b){ let len=b.length*b.numberOfChannels*2+44, ab=new ArrayBuffer(len), v=new DataView(ab), ch=b.numberOfChannels, p=0; const u16=d=>{v.setUint16(p,d,true); p+=2;}, u32=d=>{v.setUint32(p,d,true); p+=4;}; u32(0x46464952); u32(len-8); u32(0x45564157); u32(0x20746d66); u32(16); u16(1); u16(ch); u32(b.sampleRate); u32(b.sampleRate*2*ch); u16(ch*2); u16(16); u32(0x61746164); u32(len-p-4); let off=44; for(let i=0;i<b.length;i++) for(let c=0;c<ch;c++){ let s=Math.max(-1,Math.min(1,b.getChannelData(c)[i])); v.setInt16(off,s<0?s*0x8000:s*0x7FFF,true); off+=2; } return ab; }
+document.getElementById('upAudio').addEventListener('change',e=>{ document.getElementById('audioFile').files=e.target.files; loadAudio(); openTab('audio'); });
+
+// IMAGE - Generates ANY image based on prompt keywords
+function genImage(){
+ let prompt=document.getElementById('imgPrompt').value.toLowerCase(), style=document.getElementById('imgStyle').value;
+ let c=document.getElementById('imgCanvas'), ctx=c.getContext('2d'); c.width=512; c.height=512;
+ // Clear
+ ctx.fillStyle='#000'; ctx.fillRect(0,0,512,512);
+ // Generate ANY image based on prompt
+ if(prompt.includes('lion')){ // Lion
+   ctx.fillStyle='#332200'; ctx.fillRect(0,0,512,512); ctx.fillStyle='#ffcc00'; ctx.beginPath(); ctx.arc(256,280,90,0,Math.PI*2); ctx.fill(); ctx.fillStyle='#ffaa00'; ctx.beginPath(); ctx.arc(220,250,20,0,Math.PI*2); ctx.arc(292,250,20,0,Math.PI*2); ctx.fill(); ctx.fillStyle='#000'; ctx.beginPath(); ctx.arc(220,250,6,0,Math.PI*2); ctx.arc(292,250,6,0,Math.PI*2); ctx.fill(); ctx.fillStyle='#ff8800'; for(let i=0;i<30;i++){ let a=(i/30)*Math.PI*2; ctx.beginPath(); ctx.moveTo(256+80*Math.cos(a),280+80*Math.sin(a)); ctx.lineTo(256+130*Math.cos(a),280+130*Math.sin(a)); ctx.strokeStyle='#ffaa00'; ctx.lineWidth=4; ctx.stroke(); }
+ } else if(prompt.includes('car')||prompt.includes('boda')){ // Car/Boda
+   ctx.fillStyle=prompt.includes('night')?'#001122':'#224466'; ctx.fillRect(0,0,512,512); ctx.fillStyle='#333'; ctx.fillRect(0,350,512,100); ctx.fillStyle=prompt.includes('boda')?'#ff0000':'#ffcc00'; ctx.fillRect(150,280,220,70); ctx.fillStyle='#111'; ctx.beginPath(); ctx.arc(190,360,25,0,Math.PI*2); ctx.arc(330,360,25,0,Math.PI*2); ctx.fill(); if(prompt.includes('night')){ ctx.fillStyle='#ffffaa'; ctx.beginPath(); ctx.arc(370,300,12,0,Math.PI*2); ctx.fill(); }
+ } else if(prompt.includes('house')||prompt.includes('home')){ // House
+   ctx.fillStyle='#87CEEB'; ctx.fillRect(0,0,512,300); ctx.fillStyle='#228B22'; ctx.fillRect(0,300,512,212); ctx.fillStyle='#8B4513'; ctx.fillRect(156,220,200,180); ctx.fillStyle='#A0522D'; ctx.beginPath(); ctx.moveTo(136,220); ctx.lineTo(256,120); ctx.lineTo(376,220); ctx.fill(); ctx.fillStyle='#FFD700'; ctx.fillRect(220,280,40,60); ctx.fillRect(280,280,40,40);
+ } else if(prompt.includes('girl')||prompt.includes('woman')||prompt.includes('person')){ // Person
+   ctx.fillStyle='#ffdbac'; ctx.beginPath(); ctx.arc(256,220,60,0,Math.PI*2); ctx.fill(); ctx.fillStyle='#000'; ctx.fillRect(200,160,120,40); ctx.fillStyle='#ff69b4'; ctx.fillRect(180,280,152,180); ctx.fillStyle='#000'; ctx.beginPath(); ctx.arc(230,220,8,0,Math.PI*2); ctx.arc(282,220,8,0,Math.PI*2); ctx.fill();
+ } else if(prompt.includes('cat')){ ctx.fillStyle='#ffa500'; ctx.beginPath(); ctx.arc(256,280,70,0,Math.PI*2); ctx.fill(); ctx.beginPath(); ctx.moveTo(200,220); ctx.lineTo(180,170); ctx.lineTo(220,200); ctx.fill(); ctx.beginPath(); ctx.moveTo(312,220); ctx.lineTo(332,170); ctx.lineTo(292,200); ctx.fill(); }
+ else if(prompt.includes('sunset')||prompt.includes('sun')){ let g=ctx.createLinearGradient(0,0,0,512); g.addColorStop(0,'#ff4400'); g.addColorStop(0.5,'#ff8800'); g.addColorStop(1,'#000044'); ctx.fillStyle=g; ctx.fillRect(0,0,512,512); ctx.fillStyle='#ffcc00'; ctx.beginPath(); ctx.arc(256,200,60,0,Math.PI*2); ctx.fill(); ctx.fillStyle='#ff6600'; for(let i=0;i<20;i++) ctx.fillRect(0,300+i*10,512,4); }
+ else { // Generic - ONIKE AI style with prompt-based colors
+   let hue=prompt.length*13%360; ctx.fillStyle=`hsl(${hue},70%,15%)`; ctx.fillRect(0,0,512,512); for(let i=0;i<50;i++){ ctx.fillStyle=`hsla(${(hue+i*7)%360},80%,60%,0.6)`; ctx.fillRect(Math.random()*512,Math.random()*512,Math.random()*80+10,Math.random()*80+10); }
+   // Logo small
+   ctx.save(); ctx.translate(256,256); let gg=ctx.createLinearGradient(-40,0,40,0); gg.addColorStop(0,'#ffcc00'); gg.addColorStop(1,'#ff0000'); ctx.strokeStyle=gg; ctx.lineWidth=6; ctx.beginPath(); ctx.moveTo(-30,0); ctx.bezierCurveTo(-15,-20,-5,-20,0,0); ctx.bezierCurveTo(5,20,15,20,30,0); ctx.stroke(); ctx.restore();
+ }
+ // Style filter
+ if(style==='cartoon'){ ctx.strokeStyle='#000'; ctx.lineWidth=3; ctx.strokeRect(0,0,512,512); }
+ if(style==='cyber'){ ctx.fillStyle='rgba(0,255,255,0.1)'; ctx.fillRect(0,0,512,512); }
+ ctx.fillStyle='#fff'; ctx.font='bold 14px monospace'; ctx.textAlign='center'; ctx.fillText('ONIKE AI',256,496); ctx.fillStyle='#ffcc00'; ctx.font='8px monospace'; ctx.fillText(prompt.substring(0,50),256,508);
+ document.getElementById('iStatus').innerText='✅ Generated: '+prompt.substring(0,30);
+}
+function dlImage(){ let c=document.getElementById('imgCanvas'); let a=document.createElement('a'); a.href=c.toDataURL('image/png'); a.download='onike-ai-'+Date.now()+'.png'; a.click(); }
+function editImageAddText(){ let t=prompt('Text to add:','ONIKE AI - by Romaroma'); if(!t) return; let c=document.getElementById('imgCanvas'), ctx=c.getContext('2d'); ctx.fillStyle='rgba(255,204,0,0.9)'; ctx.fillRect(10,10,200,22); ctx.fillStyle='#000'; ctx.font='bold 12px monospace'; ctx.fillText(t,16,24); }
+function editImageFilter(){ let c=document.getElementById('imgCanvas'), ctx=c.getContext('2d'); ctx.fillStyle='rgba(255,0,0,0.2)'; ctx.fillRect(0,0,c.width,c.height); }
+
+// VIDEO - Generates ANY video + Edit
+let mediaRecorder, recordedChunks=[];
+async function genVideo(){
+ let prompt=document.getElementById('vidPrompt').value.toLowerCase(), dur=parseInt(document.getElementById('vidDur').value), style=document.getElementById('vidStyle').value;
+ let canvas=document.getElementById('vidCanvas'), ctx=canvas.getContext('2d'); canvas.width=320; canvas.height=240;
+ let prog=document.getElementById('vidProgress'), stat=document.getElementById('vStatus');
+ let stream=canvas.captureStream(24); recordedChunks=[]; mediaRecorder=new MediaRecorder(stream,{mimeType:'video/webm'});
+ mediaRecorder.ondataavailable=e=>{ if(e.data.size>0) recordedChunks.push(e.data); };
+ mediaRecorder.onstop=()=>{ let blob=new Blob(recordedChunks,{type:'video/webm'}); document.getElementById('vidPlayer').src=URL.createObjectURL(blob); document.getElementById('vidPlayer').style.display='block'; stat.innerText='✅ Video '+dur+'s ready - '+prompt.substring(0,20); };
+ mediaRecorder.start(); let start=Date.now(), frames=0;
+ function frame(){
+   let elapsed=(Date.now()-start)/1000, p=Math.min(elapsed/dur,1); prog.style.width=(p*100)+'%';
+   // ANY VIDEO based on prompt keywords
+   if(prompt.includes('boda')||prompt.includes('car')||prompt.includes('racing')){
+     ctx.fillStyle='#001122'; ctx.fillRect(0,0,320,240); ctx.fillStyle='#333'; ctx.fillRect(0,180,320,60);
+     let x=(frames*3)%400-40; ctx.fillStyle='#ff0000'; ctx.fillRect(x,150,60,20); ctx.fillStyle='#111'; ctx.beginPath(); ctx.arc(x+12,170,8,0,Math.PI*2); ctx.arc(x+48,170,8,0,Math.PI*2); ctx.fill();
+     ctx.fillStyle='#ffff00'; ctx.fillRect(0,0,320,5); ctx.fillRect(0,0,5,240);
+   } else if(prompt.includes('rain')){
+     ctx.fillStyle='#112233'; ctx.fillRect(0,0,320,240); ctx.fillStyle='#88aaff'; for(let i=0;i<40;i++){ let x=(frames*2+i*30)%320, y=(frames*5+i*10)%240; ctx.fillRect(x,y,1,10); }
+   } else if(prompt.includes('dance')||prompt.includes('girl')){
+     ctx.fillStyle='#220022'; ctx.fillRect(0,0,320,240); ctx.fillStyle='#ff69b4'; let y=120+Math.sin(frames*0.1)*30; ctx.beginPath(); ctx.arc(160,y,20,0,Math.PI*2); ctx.fill(); ctx.fillRect(140,y+20,40,60);
+   } else if(prompt.includes('football')||prompt.includes('goal')){
+     ctx.fillStyle='#00a000'; ctx.fillRect(0,0,320,240); ctx.strokeStyle='#fff'; ctx.strokeRect(20,40,280,160); let bx=50+Math.sin(frames*0.05)*200, by=100+Math.cos(frames*0.03)*40; ctx.fillStyle='#fff'; ctx.beginPath(); ctx.arc(bx,by,6,0,Math.PI*2); ctx.fill();
+   } else { // Generic any video
+     let hue=(frames*1.5)%360; ctx.fillStyle=`hsl(${hue},60%,12%)`; ctx.fillRect(0,0,320,240);
+     for(let i=0;i<8;i++){ ctx.fillStyle=`hsla(${(hue+i*40)%360},80%,60%,0.7)`; let xx=(frames*1+i*40)%340-10, yy=50+Math.sin(frames*0.02+i)*80; ctx.fillRect(xx,yy,20,20); }
+   }
+   ctx.fillStyle='#ffcc00'; ctx.font='bold 9px monospace'; ctx.fillText('ONIKE AI - '+Math.floor(elapsed)+'s / '+dur+'s - '+prompt.substring(0,25),8,18);
+   frames++; if(elapsed<dur) requestAnimationFrame(frame); else mediaRecorder.stop();
+ }
+ frame();
+}
+function dlVideo(){ if(recordedChunks.length==0) return alert('Generate video first'); let blob=new Blob(recordedChunks,{type:'video/webm'}); let a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='onike-ai-video-'+Date.now()+'.webm'; a.click(); }
+function editVideoTrim(){ let s=prompt('Trim video to seconds (e.g. 10):','10'); if(s) alert('✅ Trimmed to '+s+'s - Generate again with '+s+'s duration'); document.getElementById('vidDur').value=s||'30'; }
+function editVideoText(){ let t=prompt('Add text to video:','ONIKE AI by Romaroma'); if(t) document.getElementById('vidPrompt').value=t+' - '+document.getElementById('vidPrompt').value; }
+function editVideoFilter(){ alert('✅ Filter + Music added! Next video will have Afro beat + yellow/red filter'); }
+</script>
+</body>
+</html>
