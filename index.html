@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ONIKE AI - All in One Creator</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#0a0a0b;--card:#151518;--border:#232328;--accent:#7c3aed;--accent2:#06ffa5;--text:#fff;--muted:#8a8a93}
+body{background:var(--bg);color:var(--text);font-family:'Space Grotesk',sans-serif;min-height:100vh}
+.header{border-bottom:1px solid var(--border);padding:16px 20px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;background:rgba(10,10,11,0.95);backdrop-filter:blur(20px);z-index:10}
+.logo{font-weight:700;font-size:24px;letter-spacing:-1px}.logo span{background:linear-gradient(90deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.api-box{display:flex;gap:8px;align-items:center;background:var(--card);border:1px solid var(--border);padding:6px 10px;border-radius:12px}
+.api-box small{font-size:10px;color:var(--muted)}.dot{width:8px;height:8px;background:var(--accent2);border-radius:50%;box-shadow:0 0 10px var(--accent2)}
+.tabs{display:flex;gap:8px;padding:16px 20px;overflow-x:auto}
+.tab{padding:11px 20px;border-radius:999px;border:1px solid var(--border);background:var(--card);color:var(--muted);font-weight:600;font-size:13px;cursor:pointer;white-space:nowrap;transition:.2s}
+.tab.active{background:#fff;color:#000;border-color:#fff}
+.container{max-width:1100px;margin:0 auto;padding:0 20px 40px}
+.panel{display:none}.panel.active{display:block}
+.prompt-wrap{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:18px;margin-top:10px}
+.prompt-wrap textarea{width:100%;background:#0f0f12;border:1px solid var(--border);border-radius:14px;padding:14px;color:#fff;font-family:'Space Grotesk';font-size:15px;min-height:90px;resize:vertical;outline:none}
+.prompt-wrap textarea:focus{border-color:var(--accent)}
+.row{display:flex;gap:10px;margin-top:12px;flex-wrap:wrap}
+.btn{padding:12px 20px;border-radius:12px;border:0;font-weight:700;font-size:14px;cursor:pointer;transition:.2s}
+.btn-primary{background:linear-gradient(90deg,var(--accent),#a855f7);color:#fff;flex:1}
+.btn-primary:hover{transform:translateY(-1px)}.btn-secondary{background:#232328;color:#fff}
+.output{margin-top:18px;background:var(--card);border:1px solid var(--border);border-radius:20px;padding:16px;min-height:200px}
+.output img{max-width:100%;border-radius:14px;margin-top:10px}.output iframe{width:100%;height:500px;border:0;border-radius:14px;background:#fff;margin-top:10px}
+.code{font-family:'JetBrains Mono';font-size:12px;background:#0f0f12;padding:12px;border-radius:10px;overflow:auto;white-space:pre-wrap;margin-top:10px;border:1px solid var(--border);max-height:400px}
+.badge{display:inline-block;padding:4px 8px;border-radius:999px;background:#1e1e22;border:1px solid var(--border);font-size:10px;color:var(--muted);margin-bottom:8px}
+h2{font-size:26px;margin:8px 0 4px;letter-spacing:-1px}p.muted{color:var(--muted);font-size:13px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px;margin-top:14px}
+.example{padding:12px;border:1px solid var(--border);border-radius:12px;background:#111113;cursor:pointer;font-size:13px}.example:hover{border-color:var(--accent)}
+</style>
+</head>
+<body>
+<div class="header">
+  <div class="logo">ONIKE <span>AI</span></div>
+  <div class="api-box"><div class="dot"></div><small>API CONNECTED</small></div>
+</div>
+<div class="tabs">
+  <div class="tab active" onclick="switchTab(event,'image')">🖼️ Image</div>
+  <div class="tab" onclick="switchTab(event,'video')">🎬 Video</div>
+  <div class="tab" onclick="switchTab(event,'game')">🎮 Game</div>
+  <div class="tab" onclick="switchTab(event,'website')">🌐 Website</div>
+</div>
+<div class="container">
+  <div id="panel-image" class="panel active">
+    <h2>Image Generator</h2>
+    <p class="muted">Free Flux model - no credits needed.</p>
+    <div class="prompt-wrap">
+      <textarea id="imgPrompt">white Astorya long sleeve t-shirt with mountain graphic, clean studio photo, 8k, professional model</textarea>
+      <div class="row"><button class="btn btn-primary" onclick="genImage()">Generate Image</button><button class="btn btn-secondary" onclick="downloadLast('img')">Open Full</button></div>
+    </div>
+    <div class="grid">
+      <div class="example" onclick="setPrompt('imgPrompt',this.innerText)">African businessman in Kampala with red chair, cinematic portrait, 8k</div>
+      <div class="example" onclick="setPrompt('imgPrompt',this.innerText)">futuristic gaming poster for ONIKE AI, neon purple green, 3d render</div>
+      <div class="example" onclick="setPrompt('imgPrompt',this.innerText)">minimalist logo for Onike AI, purple and green gradient, modern</div>
+    </div>
+    <div id="out-image" class="output"><span class="badge">OUTPUT</span><p class="muted">Your image will appear here.</p></div>
+  </div>
+  <div id="panel-video" class="panel">
+    <h2>Video Generator</h2><p class="muted">AI enhanced prompts for Veo / Runway / Luma + script</p>
+    <div class="prompt-wrap">
+      <textarea id="vidPrompt">a man in white long sleeve Astorya shirt sitting on red plastic chair in green field, cinematic slow zoom, golden hour, 4k</textarea>
+      <div class="row"><button class="btn btn-primary" onclick="genVideoPrompt()">Generate Viral Video Pack</button></div>
+    </div>
+    <div id="out-video" class="output"><span class="badge">OUTPUT</span><p class="muted">Paste prompt into Runway Gen-4 or Google Veo 3.</p></div>
+  </div>
+  <div id="panel-game" class="panel">
+    <h2>Game Generator</h2><p class="muted">Creates playable HTML5 games - Claude 3.5 Sonnet</p>
+    <div class="prompt-wrap">
+      <textarea id="gamePrompt">create a simple flappy bird game where bird is a man in white shirt, tap to fly, score counter, game over screen, colorful, all in one HTML file with canvas</textarea>
+      <div class="row"><button class="btn btn-primary" onclick="genCode('game')">Generate Game</button><button class="btn btn-secondary" onclick="playLastGame()">Play Fullscreen</button></div>
+    </div>
+    <div id="out-game" class="output"><span class="badge">OUTPUT</span><p class="muted">Game will run here.</p></div>
+  </div>
+  <div id="panel-website" class="panel">
+    <h2>Website Generator</h2><p class="muted">Full landing page in one file - Tailwind, responsive</p>
+    <div class="prompt-wrap">
+      <textarea id="webPrompt">create a modern dark landing page for ONIKE AI - All-in-One AI Creator for games, images, videos, websites. Hero with gradient, features grid with 4 cards, pricing, testimonials, contact form, purple #7c3aed and green #06ffa5 gradient, fully responsive, all in one HTML file with Tailwind CDN</textarea>
+      <div class="row"><button class="btn btn-primary" onclick="genCode('website')">Generate Website</button><button class="btn btn-secondary" onclick="previewLast()">Preview Live</button></div>
+    </div>
+    <div id="out-website" class="output"><span class="badge">OUTPUT</span><p class="muted">Website preview will appear here.</p></div>
+  </div>
+</div>
+<script>
+const API_KEY = "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";
+let last={img:null,game:null,website:null,gameHtml:null,websiteHtml:null};
+function switchTab(e,name){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  e.target.classList.add('active');
+  document.getElementById('panel-'+name).classList.add('active');
+}
+function setPrompt(id,txt){document.getElementById(id).value=txt}
+async function genImage(){
+  const prompt=document.getElementById('imgPrompt').value.trim();
+  const out=document.getElementById('out-image');
+  if(!prompt) return alert('Write prompt');
+  out.innerHTML='<span class="badge">GENERATING...</span><p class="muted">Flux is drawing...</p>';
+  const seed=Math.floor(Math.random()*999999);
+  const url=`https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=1024&height=1024&seed=${seed}&model=flux&nologo=true&enhance=true`;
+  const img=new Image();img.crossOrigin="anonymous";
+  img.onload=()=>{last.img=url;out.innerHTML=`<span class="badge">DONE ✓</span><img src="${url}" id="lastImg"><div class="code">${prompt}</div>`};
+  img.onerror=()=>{out.innerHTML='<p style="color:#ff5555">Failed, try again</p>'};
+  img.src=url;
+}
+async function genVideoPrompt(){
+  const prompt=document.getElementById('vidPrompt').value.trim();
+  const out=document.getElementById('out-video');
+  out.innerHTML='<span class="badge">AI IS WRITING...</span>';
+  try{
+    const res=await fetch('https://openrouter.ai/api/v1/chat/completions',{method:'POST',headers:{'Authorization':'Bearer '+API_KEY,'Content-Type':'application/json'},body:JSON.stringify({model:'google/gemini-flash-1.5',messages:[{role:'user',content:`You are viral video director. User wants: ${prompt}. Give: 1) Optimized Runway/Veo 3 prompt detailed 2) Negative prompt 3) 3 viral TikTok captions Uganda. Short.`}]})});
+    const data=await res.json();
+    const text=data.choices?.[0]?.message?.content||'Error';
+    out.innerHTML=`<span class="badge">DONE ✓</span><div class="code">${text.replace(/</g,'&lt;')}</div>`;
+  }catch(e){out.innerHTML=`<span class="badge">ERROR</span><p>${e.message}</p>`}
+}
+async function genCode(type){
+  const isGame=type==='game';
+  const promptId=isGame?'gamePrompt':'webPrompt';
+  const outId=isGame?'out-game':'out-website';
+  const prompt=document.getElementById(promptId).value.trim();
+  const out=document.getElementById(outId);
+  if(!prompt) return alert('Write prompt');
+  out.innerHTML='<span class="badge">CODING 10-20s...</span><p class="muted">Claude 3.5 Sonnet is writing...</p>';
+  try{
+    const system=isGame?'You are expert HTML5 game dev. Create ONE single HTML file with inline CSS+JS, playable game. No external libs unless CDN. Canvas based, mobile touch support. Output ONLY raw HTML code, no markdown.':'You are expert web designer. Create ONE single HTML file landing page with Tailwind CDN https://cdn.tailwindcss.com, inline CSS/JS, fully responsive, modern dark design with purple/green gradient. Output ONLY raw HTML code, no markdown.';
+    const res=await fetch('https://openrouter.ai/api/v1/chat/completions',{method:'POST',headers:{'Authorization':'Bearer '+API_KEY,'Content-Type':'application/json'},body:JSON.stringify({model:'anthropic/claude-3.5-sonnet',messages:[{role:'system',content:system},{role:'user',content:prompt}]})});
+    const data=await res.json();
+    let code=data.choices?.[0]?.message?.content||'';
+    code=code.replace(/```html/g,'').replace(/```/g,'').trim();
+    if(isGame){last.gameHtml=code}else{last.websiteHtml=code}
+    const blobUrl=URL.createObjectURL(new Blob([code],{type:'text/html'}));
+    out.innerHTML=`<span class="badge">DONE ✓</span><div class="row"><button class="btn btn-secondary" onclick="downloadLast('${type}')">Download HTML</button></div><iframe id="frame-${type}" src="${blobUrl}" style="margin-top:12px"></iframe><div class="code">${code.substring(0,6000).replace(/</g,'&lt;')}...</div>`;
+  }catch(e){out.innerHTML=`<span class="badge">ERROR</span><p>${e.message}</p>`}
+}
+function downloadLast(type){
+  let content,name;
+  if(type==='img'&&last.img){window.open(last.img,'_blank');return}
+  if(type==='game'){content=last.gameHtml;name='onike-game.html'}
+  if(type==='website'){content=last.websiteHtml;name='onike-website.html'}
+  if(!content) return alert('Generate first');
+  const blob=new Blob([content],{type:'text/html'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;a.click();
+}
+function playLastGame(){if(!last.gameHtml) return alert('Generate game first');const w=window.open();w.document.write(last.gameHtml)}
+function previewLast(){if(!last.websiteHtml) return alert('Generate website first');const w=window.open();w.document.write(last.websiteHtml)}
+</script>
+</body>
+  </html>
