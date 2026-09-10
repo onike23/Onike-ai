@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ONIKE AI</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@700;800&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}:root{--bg:#050507;--sidebar:#111113;--card:#18181b;--border:#232326;--accent:#7c3aed;--green:#06ffa5;--text:#fff;--muted:#9f9fa9}
+body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;display:flex;height:100vh;overflow:hidden}
+#splash{position:fixed;inset:0;z-index:9999;background:radial-gradient(ellipse at top,#1a1033 0%,#050507 60%);display:flex;flex-direction:column;align-items:center;justify-content:center;transition:opacity.8s ease}
+#splash.hide{opacity:0;pointer-events:none}
+.splash-logo{width:110px;height:110px;border-radius:28px;background:linear-gradient(135deg,var(--accent),var(--green));display:flex;align-items:center;justify-content:center;font-family:'Space Grotesk';font-weight:800;font-size:48px;color:#fff;animation:float 3s ease-in-out infinite}@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+.splash-title{font-family:'Space Grotesk';font-weight:800;font-size:42px;margin-top:22px;letter-spacing:-1px}
+.splash-title span{background:linear-gradient(90deg,var(--accent),var(--green));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.splash-typing-box{margin-top:26px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:999px;padding:14px 28px;min-width:380px;text-align:center}
+.splash-typing{font-family:'Space Grotesk';font-weight:600;font-size:14px;letter-spacing:.5px}
+.splash-progress{position:absolute;bottom:0;left:0;height:3px;background:linear-gradient(90deg,var(--accent),var(--green));width:0%}
+.sidebar{width:260px;background:var(--sidebar);border-right:1px solid var(--border);display:flex;flex-direction:column;padding:16px}
+.logo{font-family:'Space Grotesk';font-weight:800;font-size:22px;display:flex;gap:10px;align-items:center;margin-bottom:20px}.logo-icon{width:32px;height:32px;border-radius:10px;background:linear-gradient(135deg,var(--accent),var(--green));display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px}
+.logo span{background:linear-gradient(90deg,var(--accent),var(--green));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.header{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+.header h1{font-family:'Space Grotesk';font-size:18px;font-weight:800;letter-spacing:-.5px}
+.chat-area{flex:1;overflow-y:auto;padding:24px;display:flex;flex-direction:column;gap:16px}
+.message{max-width:850px;width:100%;margin:0 auto;display:flex;gap:12px}.message.user{flex-direction:row-reverse}
+.avatar{width:32px;height:32px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:12px}.avatar.ai{background:linear-gradient(135deg,var(--accent),var(--green));color:#fff}.avatar.user{background:#fff;color:#000}
+.bubble{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:14px 16px;font-size:14px;line-height:1.6;max-width:75%;word-wrap:break-word}
+.message.user.bubble{background:#fff;color:#000;border-color:#fff}
+.bubble img{max-width:100%;border-radius:12px;margin-top:12px}.bubble iframe{width:100%;height:460px;border:0;border-radius:12px;background:#fff;margin-top:12px}
+.input-area{padding:16px 20px;border-top:1px solid var(--border);background:var(--sidebar)}
+.input-box{max-width:850px;margin:0 auto;background:var(--card);border:1.5px solid var(--border);border-radius:24px;padding:8px 8px 8px 16px;display:flex;align-items:flex-end;gap:8px}.input-box:focus-within{border-color:var(--accent)}
+.input-box textarea{flex:1;background:transparent;border:0;color:#fff;font-family:'Inter';font-size:15px;resize:none;outline:none;min-height:24px;max-height:120px;padding:6px 0}
+.send-btn{width:38px;height:38px;border-radius:12px;border:0;background:linear-gradient(90deg,var(--accent),#a855f7);color:#fff;cursor:pointer;font-weight:700;font-size:16px}
+</style>
+</head>
+<body>
+<div id="splash"><div class="splash-progress" id="splashProgress"></div><div class="splash-logo">O</div><div class="splash-title">ONIKE <span>AI</span></div><div class="splash-typing-box"><div class="splash-typing" id="typingText"></div></div></div>
+
+<div class="sidebar"><div class="logo"><div class="logo-icon">O</div>ONIKE <span>AI</span></div></div>
+
+<div class="main">
+<div class="header"><h1>ONIKE AI</h1></div>
+<div class="chat-area" id="chatArea"></div>
+<div class="input-area"><div class="input-box"><textarea id="userInput" placeholder="ASK ONIKE AI..." rows="1"></textarea><button class="send-btn" onclick="send()">↑</button></div></div>
+</div>
+
+<script>
+// SPLASH 7 SEC WORD BY WORD
+const fullText="ONIKE AI FREE POWERED BY ROMA ROMA GERARD ONIKE 🇺🇬";
+const words=fullText.split(' ');let wi=0;const typingEl=document.getElementById('typingText'),splash=document.getElementById('splash'),progress=document.getElementById('splashProgress');
+function typeW(){if(wi<words.length){let w=words[wi],td='',c=0;(function tc(){if(c<w.length){td+=w[c];typingEl.innerHTML=words.slice(0,wi).join(' ')+(wi>0?' ':'')+td+'<span style="display:inline-block;width:2px;height:14px;background:#06ffa5;margin-left:3px;animation:blink.8s infinite;vertical-align:middle"></span>';c++;setTimeout(tc,70)}else{wi++;setTimeout(typeW,180)}})()}else{typingEl.innerHTML=fullText}}
+typeW();let prog=0;let iv=setInterval(()=>{prog+=100/70;progress.style.width=prog+'%';if(prog>=100)clearInterval(iv)},100);setTimeout(()=>{splash.classList.add('hide');setTimeout(()=>splash.style.display='none',800)},7000);
+
+// NO-KEY AI - CLEAN, NO SAMPLE TEXT
+const chatArea=document.getElementById('chatArea'),userInput=document.getElementById('userInput');
+function addMsg(role,content){const div=document.createElement('div');div.className='message '+(role==='user'?'user':'ai');let f=content.replace(/</g,'&lt;').replace(/>/g,'&gt;');f=f.replace(/```html([\s\S]*?)```/g,(m,code)=>{const blob=URL.createObjectURL(new Blob([code],{type:'text/html'}));return `<iframe src="${blob}"></iframe>`});f=f.replace(/!\[image\]\((.*?)\)/g,'<img src="$1">');f=f.replace(/\n/g,'<br>');div.innerHTML=`<div class="avatar ${role==='user'?'user':'ai'}">${role==='user'?'U':'O'}</div><div class="bubble">${f}</div>`;chatArea.appendChild(div);chatArea.scrollTop=chatArea.scrollHeight}
+async function send(){
+const text=userInput.value.trim();if(!text)return;
+addMsg('user',text);userInput.value='';
+const th=document.createElement('div');th.id='thinking';th.className='message ai';th.innerHTML='<div class="avatar ai">O</div><div class="bubble" style="color:#9f9fa9">ONIKE AI</div>';chatArea.appendChild(th);
+const lower=text.toLowerCase();
+try{
+let reply='';
+if(lower.includes('image')||lower.includes('generate')||lower.includes('photo')||lower.includes('picture')||lower.includes('shirt')){
+const seed=Math.floor(Math.random()*999999);
+const prompt=encodeURIComponent(text);
+const imgUrl=`https://image.pollinations.ai/prompt/${prompt}?width=1024&height=1024&seed=${seed}&model=flux&nologo=true&enhance=true`;
+reply=`![image](${imgUrl})`;
+}else if(lower.includes('game')||lower.includes('build')){
+const gp=encodeURIComponent(`Build complete playable HTML game: ${text}. One file canvas mobile touch score game over restart. Output ONLY html in \`\`\`html`);
+const r=await fetch(`https://text.pollinations.ai/${gp}?model=openai`);
+let code=await r.text();
+reply=`\`\`\`html\n${code}\n\`\`\``;
+}else{
+const r=await fetch(`https://text.pollinations.ai/${encodeURIComponent(text)}?model=openai`);
+reply=await r.text();
+}
+document.getElementById('thinking')?.remove();addMsg('ai',reply);
+}catch(e){document.getElementById('thinking')?.remove();addMsg('ai','ERROR: '+e.message)}
+}
+userInput.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();send()}});
+userInput.addEventListener('input',()=>{userInput.style.height='auto';userInput.style.height=userInput.scrollHeight+'px'});
+</script>
+</body>
+  </html>
